@@ -1,0 +1,31 @@
+#adminmenu #menu-posts-sp_sponsor .menu-icon-sp_sponsor div.wp-menu-image:before,
+#dashboard_right_now .sp_sponsor-count a:before,
+#dashboard_right_now .sp_sponsor-count span:before {
+	font-family: sportspress, dashicons !important;
+	width: 20px;
+	text-align: center;
+}
+
+#dashboard_right_now .sp_sponsor-count a:before,
+#dashboard_right_now .sp_sponsor-count span:before {
+	content: "\f488";
+}
+
+.fixed .column-sp_clicks {
+	width: 10%;
+}
+
+.sp-link:before {
+	font: normal 20px/1 'dashicons';
+	speak: none;
+	display: inline-block;
+	padding: 0 2px 0 0;
+	top: 0;
+	left: -1px;
+	position: relative;
+	vertical-align: top;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-decoration: none !important;
+	content: "\f504";
+}

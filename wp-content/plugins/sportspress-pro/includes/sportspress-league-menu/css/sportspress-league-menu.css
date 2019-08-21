@@ -1,0 +1,52 @@
+.sp-league-menu {
+	display: block;
+	clear: both;
+	padding: 0 15px;
+	background: #000000;
+	position: relative;
+	z-index: 2;
+}
+
+.sp-league-menu .sp-inner {
+	width: 1000px;
+	max-width: 100%;
+	padding: 4px 0;
+	text-align: center;
+	margin: 0 auto;
+	position: relative;
+}
+
+.sp-league-menu .sp-league-menu-title {
+	padding: 4px 0;
+	margin-right: 8px;
+	color: #ffffff;
+	line-height: 32px;
+}
+
+.sp-league-menu .sp-league-menu-logo {
+	width: auto;
+	height: auto;
+	vertical-align: middle;
+}
+
+.sp-league-menu .sp-team-link {
+	padding: 4px 2px;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.sp-league-menu .sp-team-logo {
+	display: block;
+	max-width: 32px;
+	max-height: 32px;
+	width: auto;
+	height: auto;
+}
+
+.sp-league-menu.sp-align-left .sp-inner {
+	text-align: left;
+}
+
+.sp-league-menu.sp-align-right .sp-inner {
+	text-align: right;
+}

@@ -1,0 +1,23 @@
+.sp-scoreboard-prev {
+	left: 0;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.sp-scoreboard-next {
+	right: 0;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
+.sp-scoreboard-prev:before {
+	content: "\f341";
+}
+
+.sp-scoreboard-next:before {
+	content: "\f345";
+}
+
+.sp-scoreboard-result {
+	float: right;
+}

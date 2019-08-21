@@ -1,0 +1,61 @@
+.sp-sponsors {
+	display: block;
+	clear: both;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.sp-sponsors .sp-sponsors-title {
+	margin-top: 0;
+}
+
+.sp-sponsors .sponsor {
+	display: inline-block;
+	margin: 15px;
+}
+
+.sp-sponsors .sp-sponsor-logo {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	height: auto;
+	width: auto;
+	display: block;
+}
+
+.sp-header-sponsors {
+	z-index: 10;
+	right: 0;
+	top: 100%;
+	margin: 10px 10px -10px;
+}
+
+.sp-header-sponsors .sp-sponsors .sponsor {
+	margin: 5px 5px;
+}
+
+.sp-footer-sponsors {
+	clear: both;
+	background: #000000;
+}
+
+.sp-footer-sponsors .sp-sponsors {
+	position: relative;
+	z-index: 2;
+	clear: both;
+	padding: 5em 0;
+}
+
+.sp-footer-sponsors .sp-sponsors .sp-sponsors-title {
+	color: #ffffff;
+}
+
+@media only screen and (min-width: 40.063em) {
+	.sp-header-sponsors {
+		float: right;
+	}
+
+	.sp-header-sponsors .sp-sponsors {
+		text-align: right;
+	}
+}

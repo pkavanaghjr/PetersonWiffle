@@ -1,0 +1,8 @@
+.sp-template-tweets .twitter-timeline {
+	max-width: 100% !important;
+	width: 100% !important;
+}
+
+.sp-template-tweets-dark-theme iframe {
+	background: #292F33;
+}

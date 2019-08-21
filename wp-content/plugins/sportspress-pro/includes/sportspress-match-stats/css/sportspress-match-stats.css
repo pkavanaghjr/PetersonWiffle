@@ -1,0 +1,50 @@
+.sp-template.sp-template-event-statistics {
+	color: inherit;
+	clear: both;
+}
+
+.sp-statistic-label {
+	display: block;
+	text-align: center;
+	clear: both;
+}
+
+.sp-statistic-value {
+	vertical-align: middle;
+	text-align: center;
+	width: 10%;
+}
+
+.sp-statistic-ratio {
+	width: 80%;
+}
+
+.sp-statistic-bar {
+	height: 2em;
+	background: #2b353e;
+}
+
+.sp-statistic-bar-fill {
+	height: 100%;
+	background: #00a69c;
+}
+
+@media screen and (min-width: 801px) {
+	.sp-inline-statistics.sp-performance-sections--1 .sp-event-performance-tables .sp-template-event-performance {
+		box-sizing: border-box;
+		width: 30%;
+	}
+
+	.sp-inline-statistics.sp-performance-sections--1 .sp-event-performance-tables .sp-template-event-performance-combined {
+		width: 60%;
+	}
+
+	.sp-inline-statistics.sp-performance-sections--1 .sp-event-performance-tables .sp-template-event-statistics {
+		box-sizing: border-box;
+		display: inline-block;
+		clear: none;
+		width: 40%;
+		padding-left: 10px;
+		padding-right: 10px;
+	}
+}
