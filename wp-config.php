@@ -19,17 +19,49 @@
  */
 
 // ** MySQL settings - You can get this info from your web host ** //
-/** The name of the database for WordPress */
-define( 'DB_NAME', 'pkj_tourney' );
+if(!$_SERVER || ! $_SERVER['SERVER_NAME']){
+    define('SERVER_NAME', 'https://esteem-pwa.local:8890');
+}
+else{
+    define('SERVER_NAME', $_SERVER['SERVER_NAME']);
+}
 
-/** MySQL database username */
-define( 'DB_USER', 'root' );
+switch(SERVER_NAME):
+	case 'wiffle.patkavanaghjr.com':
+	default:
+		define( 'WP_SITEURL', 'http://wiffle.patkavanaghjr.com/' );
+		define( 'WP_HOME', 'http://wiffle.patkavanaghjr.com/' );
 
-/** MySQL database password */
-define( 'DB_PASSWORD', 'root' );
+		define( 'DB_NAME', 'patkavan_wiffle' );
 
-/** MySQL hostname */
-define( 'DB_HOST', 'localhost' );
+		/** MySQL database username */
+		define( 'DB_USER', 'patkavan_wiffle' );
+
+		/** MySQL database password */
+		define( 'DB_PASSWORD', '(gLcuNUsA#w4' );
+
+		/** MySQL hostname */
+		define( 'DB_HOST', 'localhost' );
+	break;
+
+	case 'tourneys.local':
+		define( 'WP_SITEURL', 'http://tourneys.local:8888' );
+		define( 'WP_HOME', 'http://tourneys.local:8888' );
+
+		/** The name of the database for WordPress */
+		define( 'DB_NAME', 'pkj_tourney' );
+
+		/** MySQL database username */
+		define( 'DB_USER', 'root' );
+
+		/** MySQL database password */
+		define( 'DB_PASSWORD', 'root' );
+
+		/** MySQL hostname */
+		define( 'DB_HOST', 'localhost' );
+	break;
+
+endswitch;
 
 /** Database Charset to use in creating database tables. */
 define( 'DB_CHARSET', 'utf8mb4' );
