@@ -6,6 +6,8 @@ class FrmFieldsController {
 		FrmAppHelper::permission_check( 'frm_edit_forms' );
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
+		// Javascript may be included in some field settings.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$fields = isset( $_POST['field'] ) ? wp_unslash( $_POST['field'] ) : array();
 		if ( empty( $fields ) ) {
 			wp_die();
@@ -54,6 +56,8 @@ class FrmFieldsController {
 
 		$field_type = FrmAppHelper::get_post_param( 'field_type', '', 'sanitize_text_field' );
 		$form_id    = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
+
+		do_action( 'frm_before_create_field', $field_type, $form_id );
 
 		$field = self::include_new_field( $field_type, $form_id );
 
@@ -607,6 +611,31 @@ class FrmFieldsController {
 		}
 
 		return $default_value;
+	}
+
+	/**
+	 * Maybe add a blank placeholder option before any options
+	 * in a dropdown.
+	 *
+	 * @since 4.04
+	 * @return bool True if placeholder was added.
+	 */
+	public static function add_placeholder_to_select( $field ) {
+		$placeholder = FrmField::get_option( $field, 'placeholder' );
+		if ( empty( $placeholder ) ) {
+			$placeholder = self::get_default_value_from_name( $field );
+		}
+
+		if ( $placeholder !== '' ) {
+			?>
+			<option value="">
+				<?php echo esc_html( FrmField::get_option( $field, 'autocom' ) ? '' : $placeholder ); ?>
+			</option>
+			<?php
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

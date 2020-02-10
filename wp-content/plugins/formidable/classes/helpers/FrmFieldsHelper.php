@@ -124,7 +124,7 @@ class FrmFieldsHelper {
 	 * @param array $values
 	 */
 	private static function fill_default_field_opts( $field, array &$values ) {
-		$check_post = FrmAppHelper::is_admin() && $_POST && isset( $_POST['field_options'] );
+		$check_post = FrmAppHelper::is_admin_page() && $_POST && isset( $_POST['field_options'] );
 
 		$defaults = self::get_default_field_options_from_field( $field, $values );
 		if ( ! $check_post ) {
@@ -185,11 +185,16 @@ class FrmFieldsHelper {
 		}
 
 		if ( strpos( $setting, 'html' ) !== false ) {
-			// Strip slashes from HTML but not regex.
-			$value = maybe_unserialize( wp_unslash( $_POST['field_options'][ $setting ] ) );
-		} else {
+			// Strip slashes from HTML but not regex or script tags.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$value = wp_unslash( $_POST['field_options'][ $setting ] );
+		} elseif ( strpos( $setting, 'format_' ) === 0 ) {
 			// TODO: Remove stripslashes on output, and use on input only.
-			$value = maybe_unserialize( $_POST['field_options'][ $setting ] ); // WPCS: sanitization ok.
+			$value = sanitize_text_field( $_POST['field_options'][ $setting ] ); // WPCS: sanitization ok.
+		} else {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$value = wp_unslash( $_POST['field_options'][ $setting ] );
+			FrmAppHelper::sanitize_value( 'wp_kses_post', $value );
 		}
 	}
 
@@ -258,7 +263,7 @@ class FrmFieldsHelper {
 		$values['field_key']     = FrmAppHelper::get_unique_key( $new_key, $wpdb->prefix . 'frm_fields', 'field_key' );
 		$values['form_id']       = $form_id;
 		$values['options']       = maybe_serialize( $field->options );
-		$values['default_value'] = maybe_serialize( $field->default_value );
+		$values['default_value'] = FrmAppHelper::maybe_json_encode( $field->default_value );
 
 		foreach ( array( 'name', 'description', 'type', 'field_order', 'field_options', 'required' ) as $col ) {
 			$values[ $col ] = $field->{$col};
@@ -599,7 +604,9 @@ class FrmFieldsHelper {
 			$value = trim( $value );
 		}
 
-		return wp_kses_post( $value );
+		FrmAppHelper::sanitize_value( 'wp_kses_post', $value );
+
+		return $value;
 	}
 
 	public static function array_value_condition( $observed_value, $cond, $hide_opt ) {
@@ -762,7 +769,7 @@ class FrmFieldsHelper {
 		} elseif ( in_array( $atts['tag'], $dynamic_default ) ) {
 			$replace_with = self::dynamic_default_values( $atts['tag'], $atts );
 		} elseif ( $clean_tag == 'user_agent' ) {
-			$description  = maybe_unserialize( $atts['entry']->description );
+			$description  = $atts['entry']->description;
 			$replace_with = FrmEntriesHelper::get_browser( $description['browser'] );
 		} elseif ( $clean_tag == 'created_at' || $clean_tag == 'updated_at' ) {
 			$atts['tag']  = $clean_tag;
@@ -1383,10 +1390,12 @@ class FrmFieldsHelper {
 			__( 'Bermuda', 'formidable' ),
 			__( 'Bhutan', 'formidable' ),
 			__( 'Bolivia', 'formidable' ),
+			__( 'Bonaire, Sint Eustatius and Saba', 'formidable' ),
 			__( 'Bosnia and Herzegovina', 'formidable' ),
 			__( 'Botswana', 'formidable' ),
 			__( 'Bouvet Island', 'formidable' ),
 			__( 'Brazil', 'formidable' ),
+			__( 'British Indian Ocean Territory', 'formidable' ),
 			__( 'Brunei', 'formidable' ),
 			__( 'Bulgaria', 'formidable' ),
 			__( 'Burkina Faso', 'formidable' ),
@@ -1400,9 +1409,12 @@ class FrmFieldsHelper {
 			__( 'Chad', 'formidable' ),
 			__( 'Chile', 'formidable' ),
 			__( 'China', 'formidable' ),
+			__( 'Christmas Island', 'formidable' ),
+			__( 'Cocos (Keeling) Islands', 'formidable' ),
 			__( 'Colombia', 'formidable' ),
 			__( 'Comoros', 'formidable' ),
 			__( 'Congo', 'formidable' ),
+			__( 'Cook Islands', 'formidable' ),
 			__( 'Costa Rica', 'formidable' ),
 			__( 'C&ocirc;te d\'Ivoire', 'formidable' ),
 			__( 'Croatia', 'formidable' ),
@@ -1422,11 +1434,14 @@ class FrmFieldsHelper {
 			__( 'Eritrea', 'formidable' ),
 			__( 'Estonia', 'formidable' ),
 			__( 'Ethiopia', 'formidable' ),
+			__( 'Falkland Islands (Malvinas)', 'formidable' ),
+			__( 'Faroe Islands', 'formidable' ),
 			__( 'Fiji', 'formidable' ),
 			__( 'Finland', 'formidable' ),
 			__( 'France', 'formidable' ),
 			__( 'French Guiana', 'formidable' ),
 			__( 'French Polynesia', 'formidable' ),
+			__( 'French Southern Territories', 'formidable' ),
 			__( 'Gabon', 'formidable' ),
 			__( 'Gambia', 'formidable' ),
 			__( 'Georgia', 'formidable' ),
@@ -1444,6 +1459,8 @@ class FrmFieldsHelper {
 			__( 'Guinea-Bissau', 'formidable' ),
 			__( 'Guyana', 'formidable' ),
 			__( 'Haiti', 'formidable' ),
+			__( 'Heard Island and McDonald Islands', 'formidable' ),
+			__( 'Holy See', 'formidable' ),
 			__( 'Honduras', 'formidable' ),
 			__( 'Hong Kong', 'formidable' ),
 			__( 'Hungary', 'formidable' ),
@@ -1454,6 +1471,7 @@ class FrmFieldsHelper {
 			__( 'Iraq', 'formidable' ),
 			__( 'Ireland', 'formidable' ),
 			__( 'Israel', 'formidable' ),
+			__( 'Isle of Man', 'formidable' ),
 			__( 'Italy', 'formidable' ),
 			__( 'Jamaica', 'formidable' ),
 			__( 'Japan', 'formidable' ),
@@ -1508,8 +1526,10 @@ class FrmFieldsHelper {
 			__( 'Nicaragua', 'formidable' ),
 			__( 'Niger', 'formidable' ),
 			__( 'Nigeria', 'formidable' ),
-			__( 'Norway', 'formidable' ),
+			__( 'Niue', 'formidable' ),
+			__( 'Norfolk Island', 'formidable' ),
 			__( 'Northern Mariana Islands', 'formidable' ),
+			__( 'Norway', 'formidable' ),
 			__( 'Oman', 'formidable' ),
 			__( 'Pakistan', 'formidable' ),
 			__( 'Palau', 'formidable' ),
@@ -1524,31 +1544,39 @@ class FrmFieldsHelper {
 			__( 'Portugal', 'formidable' ),
 			__( 'Puerto Rico', 'formidable' ),
 			__( 'Qatar', 'formidable' ),
+			__( 'Reunion', 'formidable' ),
 			__( 'Romania', 'formidable' ),
 			__( 'Russia', 'formidable' ),
 			__( 'Rwanda', 'formidable' ),
+			__( 'Saint Barthelemy', 'formidable' ),
+			__( 'Saint Helena, Ascension and Tristan da Cunha', 'formidable' ),
 			__( 'Saint Kitts and Nevis', 'formidable' ),
 			__( 'Saint Lucia', 'formidable' ),
+			__( 'Saint Martin (French part)', 'formidable' ),
+			__( 'Saint Pierre and Miquelon', 'formidable' ),
 			__( 'Saint Vincent and the Grenadines', 'formidable' ),
 			__( 'Samoa', 'formidable' ),
 			__( 'San Marino', 'formidable' ),
 			__( 'Sao Tome and Principe', 'formidable' ),
 			__( 'Saudi Arabia', 'formidable' ),
 			__( 'Senegal', 'formidable' ),
-			__( 'Serbia and Montenegro', 'formidable' ),
+			__( 'Serbia', 'formidable' ),
 			__( 'Seychelles', 'formidable' ),
 			__( 'Sierra Leone', 'formidable' ),
 			__( 'Singapore', 'formidable' ),
+			__( 'Sint Maarten (Dutch part)', 'formidable' ),
 			__( 'Slovakia', 'formidable' ),
 			__( 'Slovenia', 'formidable' ),
 			__( 'Solomon Islands', 'formidable' ),
 			__( 'Somalia', 'formidable' ),
 			__( 'South Africa', 'formidable' ),
+			__( 'South Georgia and the South Sandwich Islands', 'formidable' ),
 			__( 'South Sudan', 'formidable' ),
 			__( 'Spain', 'formidable' ),
 			__( 'Sri Lanka', 'formidable' ),
 			__( 'Sudan', 'formidable' ),
 			__( 'Suriname', 'formidable' ),
+			__( 'Svalbard and Jan Mayen', 'formidable' ),
 			__( 'Swaziland', 'formidable' ),
 			__( 'Sweden', 'formidable' ),
 			__( 'Switzerland', 'formidable' ),
@@ -1557,18 +1585,22 @@ class FrmFieldsHelper {
 			__( 'Tajikistan', 'formidable' ),
 			__( 'Tanzania', 'formidable' ),
 			__( 'Thailand', 'formidable' ),
+			__( 'Timor-Leste', 'formidable' ),
 			__( 'Togo', 'formidable' ),
+			__( 'Tokelau', 'formidable' ),
 			__( 'Tonga', 'formidable' ),
 			__( 'Trinidad and Tobago', 'formidable' ),
 			__( 'Tunisia', 'formidable' ),
 			__( 'Turkey', 'formidable' ),
 			__( 'Turkmenistan', 'formidable' ),
+			__( 'Turks and Caicos Islands', 'formidable' ),
 			__( 'Tuvalu', 'formidable' ),
 			__( 'Uganda', 'formidable' ),
 			__( 'Ukraine', 'formidable' ),
 			__( 'United Arab Emirates', 'formidable' ),
 			__( 'United Kingdom', 'formidable' ),
 			__( 'United States', 'formidable' ),
+			__( 'United States Minor Outlying Islands', 'formidable' ),
 			__( 'Uruguay', 'formidable' ),
 			__( 'Uzbekistan', 'formidable' ),
 			__( 'Vanuatu', 'formidable' ),
@@ -1577,6 +1609,8 @@ class FrmFieldsHelper {
 			__( 'Vietnam', 'formidable' ),
 			__( 'Virgin Islands, British', 'formidable' ),
 			__( 'Virgin Islands, U.S.', 'formidable' ),
+			__( 'Wallis and Futuna', 'formidable' ),
+			__( 'Western Sahara', 'formidable' ),
 			__( 'Yemen', 'formidable' ),
 			__( 'Zambia', 'formidable' ),
 			__( 'Zimbabwe', 'formidable' ),
@@ -1667,6 +1701,57 @@ class FrmFieldsHelper {
 		unset( $field_array['field_options'] );
 
 		return $field_array + $field_options;
+	}
+
+	/**
+	 * @since 4.04
+	 */
+	public static function show_add_field_buttons( $args ) {
+		$field_key      = $args['field_key'];
+		$field_type     = $args['field_type'];
+		$field_label    = FrmAppHelper::icon_by_class( FrmFormsHelper::get_field_link_icon( $field_type ), array( 'echo' => false ) );
+		$field_name     = FrmFormsHelper::get_field_link_name( $field_type );
+		$field_label   .= ' <span>' . $field_name . '</span>';
+
+		/* translators: %s: Field name */
+		$upgrade_label = sprintf( esc_html__( '%s fields', 'formidable' ), $field_name );
+
+		// If the individual field isn't allowed, disable it.
+		$run_filter      = true;
+		$single_no_allow = ' ';
+		$install_data    = '';
+		$requires        = '';
+		$upgrade_message = '';
+		$link            = isset( $field_type['link'] ) ? esc_url_raw( $field_type['link'] ) : '';
+		if ( strpos( $field_type['icon'], ' frm_show_upgrade' ) ) {
+			$single_no_allow   .= 'frm_show_upgrade';
+			$field_type['icon'] = str_replace( ' frm_show_upgrade', '', $field_type['icon'] );
+			$run_filter         = false;
+			if ( isset( $field_type['addon'] ) ) {
+				$upgrading = FrmAddonsController::install_link( $field_type['addon'] );
+				if ( isset( $upgrading['url'] ) ) {
+					$install_data = json_encode( $upgrading );
+				}
+				$requires = FrmFormsHelper::get_plan_required( $upgrading );
+			} elseif ( isset( $field_type['require'] ) ) {
+				$requires = $field_type['require'];
+			}
+		}
+
+		if ( isset( $field_type['message'] ) ) {
+			$upgrade_message = FrmAppHelper::kses( $field_type['message'], array( 'a', 'img' ) );
+		}
+
+		?>
+		<li class="frmbutton <?php echo esc_attr( $args['no_allow_class'] . $single_no_allow . ' frm_t' . str_replace( '|', '-', $field_key ) ); ?>" id="<?php echo esc_attr( $field_key ); ?>" data-upgrade="<?php echo esc_attr( $upgrade_label ); ?>" data-message="<?php echo esc_attr( $upgrade_message ); ?>" data-link="<?php echo esc_attr( $link ); ?>" data-medium="builder" data-oneclick="<?php echo esc_attr( $install_data ); ?>" data-content="<?php echo esc_attr( $field_key ); ?>" data-requires="<?php echo esc_attr( $requires ); ?>">
+		<?php
+		if ( $run_filter ) {
+			$field_label = apply_filters( 'frmpro_field_links', $field_label, $args['id'], $field_key );
+		}
+		echo FrmAppHelper::kses( $field_label, array( 'a', 'i', 'span', 'use', 'svg' ) ); // WPCS: XSS ok.
+		?>
+		</li>
+		<?php
 	}
 
 	/**

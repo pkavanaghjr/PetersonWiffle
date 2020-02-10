@@ -220,6 +220,7 @@ if ( '' === $field_height || 'auto' === $field_height ) {
 .<?php echo esc_html( $style_class ); ?> input[type=search],
 .<?php echo esc_html( $style_class ); ?> select,
 .<?php echo esc_html( $style_class ); ?> textarea,
+.<?php echo esc_html( $style_class ); ?> .frm-card-element.StripeElement,
 .<?php echo esc_html( $style_class ); ?> .chosen-container{
 	font-family:<?php echo FrmAppHelper::kses( $font . $important ); // WPCS: XSS ok. ?>;
 	font-size:<?php echo esc_html( $field_font_size ); ?>;
@@ -244,6 +245,7 @@ if ( '' === $field_height || 'auto' === $field_height ) {
 .<?php echo esc_html( $style_class ); ?> .frm_scroll_box .frm_opt_container,
 .frm_form_fields_active_style,
 .frm_form_fields_error_style,
+.<?php echo esc_html( $style_class ); ?> .frm-card-element.StripeElement,
 .<?php echo esc_html( $style_class ); ?> .chosen-container-multi .chosen-choices,
 .<?php echo esc_html( $style_class ); ?> .chosen-container-single .chosen-single{
 	color:<?php echo esc_html( $text_color . $important ); ?>;
@@ -285,7 +287,8 @@ if ( ! empty( $important ) ) {
 .<?php echo esc_html( $style_class ); ?> input[type=tel],
 .<?php echo esc_html( $style_class ); ?> input[type=file],
 .<?php echo esc_html( $style_class ); ?> input[type=search],
-.<?php echo esc_html( $style_class ); ?> select{
+.<?php echo esc_html( $style_class ); ?> select,
+.<?php echo esc_html( $style_class ); ?> .frm-card-element.StripeElement{
 	height:<?php echo esc_html( ( $field_height == '' ? 'auto' : $field_height ) . $important ); ?>;
 	line-height:1.3<?php echo esc_html( $important ); ?>;
 }
@@ -384,6 +387,7 @@ if ( ! empty( $important ) ) {
 .<?php echo esc_html( $style_class ); ?> .frm_focus_field input[type=tel],
 .<?php echo esc_html( $style_class ); ?> .frm_focus_field input[type=search],
 .frm_form_fields_active_style,
+.<?php echo esc_html( $style_class ); ?> .frm_focus_field .frm-card-element.StripeElement,
 .<?php echo esc_html( $style_class ); ?> .chosen-container-single.chosen-container-active .chosen-single,
 .<?php echo esc_html( $style_class ); ?> .chosen-container-active .chosen-choices{
 	background-color:<?php echo esc_html( $bg_color_active . $important ); ?>;
@@ -400,7 +404,8 @@ if ( ! empty( $important ) ) {
 .<?php echo esc_html( $style_class ); ?> input[type=submit],
 .<?php echo esc_html( $style_class ); ?> .frm_submit input[type=button],
 .<?php echo esc_html( $style_class ); ?> .frm_submit button,
-.frm_form_submit_style{
+.frm_form_submit_style,
+.<?php echo esc_html( $style_class ); ?> .frm-edit-page-btn {
 	width:<?php echo esc_html( ( $submit_width == '' ? 'auto' : $submit_width ) . $important ); ?>;
 	font-family:<?php echo FrmAppHelper::kses( $font ); // WPCS: XSS ok. ?>;
 	font-size:<?php echo esc_html( $submit_font_size . $important ); ?>;
@@ -446,6 +451,7 @@ if ( ! empty( $important ) ) {
 }
 
 	<?php if ( empty( $submit_bg_img ) ) { ?>
+.<?php echo esc_html( $style_class ); ?> .frm-edit-page-btn:hover,
 .<?php echo esc_html( $style_class ); ?> input[type=submit]:hover,
 .<?php echo esc_html( $style_class ); ?> .frm_submit input[type=button]:hover,
 .<?php echo esc_html( $style_class ); ?> .frm_submit button:hover{
@@ -458,6 +464,7 @@ if ( ! empty( $important ) ) {
 	margin-bottom:<?php echo esc_html( $submit_margin ); ?>;
 }
 
+.<?php echo esc_html( $style_class ); ?> .frm-edit-page-btn:focus,
 .<?php echo esc_html( $style_class ); ?> input[type=submit]:focus,
 .<?php echo esc_html( $style_class ); ?> .frm_submit input[type=button]:focus,
 .<?php echo esc_html( $style_class ); ?> .frm_submit button:focus,
@@ -469,6 +476,10 @@ if ( ! empty( $important ) ) {
 	color: <?php echo esc_html( $submit_active_color . $important ); ?>;
 }
 
+.<?php echo esc_html( $style_class ); ?> .frm_loading_prev .frm_prev_page,
+.<?php echo esc_html( $style_class ); ?> .frm_loading_prev .frm_prev_page:hover,
+.<?php echo esc_html( $style_class ); ?> .frm_loading_prev .frm_prev_page:active,
+.<?php echo esc_html( $style_class ); ?> .frm_loading_prev .frm_prev_page:focus,
 .<?php echo esc_html( $style_class ); ?> .frm_loading_form .frm_button_submit,
 .<?php echo esc_html( $style_class ); ?> .frm_loading_form .frm_button_submit:hover,
 .<?php echo esc_html( $style_class ); ?> .frm_loading_form .frm_button_submit:active,
@@ -477,6 +488,7 @@ if ( ! empty( $important ) ) {
 	background: <?php echo esc_html( $submit_bg_color . $important ); ?>;
 }
 
+.<?php echo esc_html( $style_class ); ?> .frm_loading_prev .frm_prev_page:before,
 .<?php echo esc_html( $style_class ); ?> .frm_loading_form .frm_button_submit:before {
 	border-bottom-color: <?php echo esc_html( $submit_text_color . $important ); ?>;
 	border-right-color: <?php echo esc_html( $submit_text_color . $important ); ?>;
@@ -573,6 +585,7 @@ if ( ! empty( $important ) ) {
 .frm_form_fields_error_style,
 .<?php echo esc_html( $style_class ); ?> .frm_blank_field .frm-g-recaptcha iframe,
 .<?php echo esc_html( $style_class ); ?> .frm_blank_field .g-recaptcha iframe,
+.<?php echo esc_html( $style_class ); ?> .frm_blank_field .frm-card-element.StripeElement,
 .<?php echo esc_html( $style_class ); ?> .frm_blank_field .chosen-container-multi .chosen-choices,
 .<?php echo esc_html( $style_class ); ?> .frm_blank_field .chosen-container-single .chosen-single,
 .<?php echo esc_html( $style_class ); ?> .frm_form_field :invalid{

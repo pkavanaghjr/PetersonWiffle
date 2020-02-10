@@ -69,7 +69,7 @@ class FrmStyle {
 
 			// Don't wp_unslash yet since it removes backslashes.
 			$new_instance['post_content'] = isset( $_POST['frm_style_setting']['post_content'] ) ? $_POST['frm_style_setting']['post_content'] : ''; // WPCS: sanitization ok.
-			FrmAppHelper::sanitize_value( 'wp_kses_post', $new_instance['post_content'] );
+			FrmAppHelper::sanitize_value( 'sanitize_textarea_field', $new_instance['post_content'] );
 			$new_instance['post_type']    = FrmStylesController::$post_type;
 			$new_instance['post_status']  = 'publish';
 			$new_instance['menu_order']   = isset( $_POST['frm_style_setting']['menu_order'] ) ? absint( $_POST['frm_style_setting']['menu_order'] ) : 0;
@@ -131,7 +131,7 @@ class FrmStyle {
 	 */
 	public function save_settings() {
 		$filename = FrmAppHelper::plugin_path() . '/css/custom_theme.css.php';
-		update_option( 'frm_last_style_update', date( 'njGi' ) );
+		update_option( 'frm_last_style_update', gmdate( 'njGi' ) );
 
 		if ( ! is_file( $filename ) ) {
 			return;
@@ -176,7 +176,7 @@ class FrmStyle {
 			'order'       => 'ASC',
 		);
 
-		FrmDb::delete_cache_and_transient( serialize( $default_post_atts ), 'frm_styles' );
+		FrmDb::delete_cache_and_transient( json_encode( $default_post_atts ), 'frm_styles' );
 		FrmDb::cache_delete_group( 'frm_styles' );
 		FrmDb::delete_cache_and_transient( 'frmpro_css' );
 	}
@@ -223,7 +223,7 @@ class FrmStyle {
 			'order'       => $order,
 		);
 
-		$temp_styles = FrmDb::check_cache( serialize( $post_atts ), 'frm_styles', $post_atts, 'get_posts' );
+		$temp_styles = FrmDb::check_cache( json_encode( $post_atts ), 'frm_styles', $post_atts, 'get_posts' );
 
 		if ( empty( $temp_styles ) ) {
 			global $wpdb;

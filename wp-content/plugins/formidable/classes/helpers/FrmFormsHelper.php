@@ -112,6 +112,18 @@ class FrmFormsHelper {
 		$name = '' === $name ? __( '(no title)', 'formidable' ) : strip_tags( $name );
 		$truncated_name = FrmAppHelper::truncate( $name, 25 );
 
+		if ( count( $forms ) < 2 ) {
+			?>
+			<div id="frm_bs_dropdown">
+				<h1>
+					<span class="frm_bstooltip" title="<?php echo esc_attr( $truncated_name === $name ? '' : $name ); ?>" data-placement="right">
+						<?php echo esc_html( $name ); ?>
+					</span>
+				</h1>
+			</div>
+			<?php
+			return;
+		}
 		?>
 		<div id="frm_bs_dropdown" class="dropdown <?php echo esc_attr( is_rtl() ? 'pull-right' : 'pull-left' ); ?>">
 			<a href="#" id="frm-navbarDrop" class="frm-dropdown-toggle" data-toggle="dropdown">
@@ -1190,7 +1202,7 @@ BEFORE_HTML;
 	}
 
 	public static function template_icon( $categories ) {
-		$ignore     = array( 'Business', 'Elite', 'Personal', 'Creator', 'Basic', 'free' );
+		$ignore     = self::ignore_template_categories();
 		$categories = array_diff( $categories, $ignore );
 
 		$icons = array(
@@ -1207,12 +1219,12 @@ BEFORE_HTML;
 			''                  => array( 'align_right' ),
 		);
 
-		if ( empty( $categories ) ) {
-			$icon = $icons[''];
-		} elseif ( count( $categories ) === 1 ) {
+		$icon = $icons[''];
+
+		if ( count( $categories ) === 1 ) {
 			$category = reset( $categories );
-			$icon     = $icons[ $category ];
-		} else {
+			$icon     = isset( $icons[ $category ] ) ? $icons[ $category ] : $icon;
+		} elseif ( ! empty( $categories ) ) {
 			foreach ( $icons as $cat => $icon ) {
 				if ( ! in_array( $cat, $categories ) ) {
 					unset( $icons[ $cat ] );
@@ -1227,6 +1239,13 @@ BEFORE_HTML;
 		FrmAppHelper::icon_by_class( 'frmfont frm_lock_icon' );
 		echo '</span>';
 		echo '</span>';
+	}
+
+	/**
+	 * @since 4.03.01
+	 */
+	public static function ignore_template_categories() {
+		return array( 'Business', 'Elite', 'Personal', 'Creator', 'Basic', 'free' );
 	}
 
 	/**
@@ -1247,9 +1266,9 @@ BEFORE_HTML;
 				'href'  => 'rel',
 				'atts'  => '',
 			);
-		} elseif ( ! empty( $args['license_type'] ) && $args['license_type'] === strtolower( $args['plan_required'] ) ) {
+		} elseif ( self::plan_is_allowed( $args ) ) {
 			$link = array(
-				'url'   => FrmAppHelper::admin_upgrade_link( 'addons', 'account/licenses/' ) . '&utm_content=' . $template['slug'],
+				'url'   => FrmAppHelper::admin_upgrade_link( 'addons', 'account/downloads/' ) . '&utm_content=' . $template['slug'],
 				'label' => __( 'Renew', 'formidable' ),
 			);
 		} else {
@@ -1260,6 +1279,37 @@ BEFORE_HTML;
 		}
 
 		return array_merge( $defaults, $link );
+	}
+
+	/**
+	 * Is the template included with the license type?
+	 *
+	 * @since 4.02.02
+	 *
+	 * @param array $args
+	 *
+	 * @return bool
+	 */
+	private static function plan_is_allowed( $args ) {
+		if ( empty( $args['license_type'] ) ) {
+			return false;
+		}
+
+		$included = $args['license_type'] === strtolower( $args['plan_required'] );
+
+		$plans = array( 'free', 'personal', 'business', 'elite' );
+		if ( $included || ! in_array( strtolower( $args['plan_required'] ), $plans ) ) {
+			return $included;
+		}
+
+		foreach ( $plans as $plan ) {
+			if ( $included || $plan === $args['license_type'] ) {
+				break;
+			}
+			$included = $plan === strtolower( $args['plan_required'] );
+		}
+
+		return $included;
 	}
 
 	/**
@@ -1309,5 +1359,158 @@ BEFORE_HTML;
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks for warnings to be displayed after form settings are saved.
+	 *
+	 * @since 4.04
+	 *
+	 * @param array $values The $_POST array, which contains values submitted in a form.
+	 *
+	 * @return array An array of warnings or an empty array.
+	 */
+	public static function check_for_warnings( $values ) {
+		$warnings = array();
+
+		$redirect_warning = self::check_redirect_url_for_unsafe_params( $values );
+
+		if ( $redirect_warning ) {
+			$warnings[] = $redirect_warning;
+		}
+
+		return apply_filters( 'frm_check_for_warnings', $warnings, $values );
+	}
+
+	/**
+	 * Checks the redirect URL for params whose names are reserved words.
+	 *
+	 * @since 4.04
+	 *
+	 * @param array $values The $_POST array, which contains the values submitted in a form.
+	 *
+	 * @return bool|string A warning message about unsafe params or false.
+	 */
+	private static function check_redirect_url_for_unsafe_params( $values ) {
+		if ( ! isset( $values['options'] ) ) {
+			return false;
+		}
+
+		$options = $values['options'];
+		FrmAppHelper::sanitize_with_html( $options );
+
+		if ( ( ! isset( $options['success_action'] ) ) || $options['success_action'] !== 'redirect' || ! isset( $options['success_url'] ) ) {
+			return false;
+		}
+
+		$unsafe_params_in_redirect = self::get_unsafe_params( $options['success_url'] );
+
+		return self::create_unsafe_param_warning( $unsafe_params_in_redirect );
+	}
+
+	/**
+	 * Returns an array of params whose names are reserved words in the specified URL.
+	 *
+	 * @since 4.04
+	 *
+	 * @param string $url The URL whose params are being checked.
+	 *
+	 * @return array An array of params whose names are reserved words or an empty array.
+	 */
+	private static function get_unsafe_params( $url ) {
+		$redirect_components = parse_url( $url );
+		parse_str( $redirect_components['query'], $redirect_params );
+		$redirect_param_names      = array_keys( $redirect_params );
+		$reserved_words            = self::reserved_words();
+		$unsafe_params_in_redirect = array_intersect( $redirect_param_names, $reserved_words );
+
+		return array_values( $unsafe_params_in_redirect );
+	}
+
+	/**
+	 * Returns a warning if reserved words have been used as param names in the redirect URL.
+	 *
+	 * @since 4.04
+	 *
+	 * @param array $unsafe_params_in_redirect Array of params from the redirect URL whose names are reserved words.
+	 *
+	 * @return bool|string A string with an unsafe param message or false.
+	 */
+	private static function create_unsafe_param_warning( $unsafe_params_in_redirect ) {
+		$count                = count( $unsafe_params_in_redirect );
+		$caution              = esc_html__( 'Is this intentional?', 'formidable' );
+		$reserved_words_intro = esc_html__( 'See the list of reserved words in WordPress.', 'formidable' );
+		$reserved_words_link  = '<a href="https://codex.wordpress.org/WordPress_Query_Vars" target="_blank"> ' . $reserved_words_intro . '</a>';
+
+		if ( $count === 0 ) {
+			return false;
+		}
+
+		if ( $count == 1 ) {
+			/* translators: %s: the name of a single parameter in the redirect URL */
+			return sprintf( esc_html__( 'The redirect URL is using the parameter "%s", which is reserved by WordPress. ', 'formidable' ), $unsafe_params_in_redirect[0] ) . $caution . $reserved_words_link;
+		}
+
+		$unsafe_params_string = implode( '", "', $unsafe_params_in_redirect );
+
+		/* translators: %s: the names of two or more parameters in the redirect URL, separated by commas */
+		return sprintf( esc_html__( 'The redirect URL is using the parameters "%s", which are reserved by WordPress. ', 'formidable' ), $unsafe_params_string ) . $caution . $reserved_words_link;
+	}
+
+	/**
+	 * Returns an array of common reserved words in WordPress.
+	 *
+	 * An edited list of reserved terms from the Codex.
+	 * https://codex.wordpress.org/Reserved_Terms
+	 *
+	 * @since 4.04
+	 *
+	 * @return array Array of WordPress reserved words.
+	 */
+	public static function reserved_words() {
+		return array(
+			'id',
+			'attachment',
+			'author',
+			'author_name',
+			'calendar',
+			'cat',
+			'category',
+			'category_name',
+			'cpage',
+			'custom',
+			'day',
+			'date',
+			'error',
+			'feed',
+			'hour',
+			'm',
+			'minute',
+			'more',
+			'name',
+			'order',
+			'p',
+			'page',
+			'page_id',
+			'paged',
+			'pb',
+			'post',
+			'posts',
+			'preview',
+			's',
+			'search',
+			'second',
+			'sentence',
+			'tag',
+			'taxonomy',
+			'tb',
+			'term',
+			'terms',
+			'theme',
+			'title',
+			'type',
+			'w',
+			'year',
+		);
 	}
 }

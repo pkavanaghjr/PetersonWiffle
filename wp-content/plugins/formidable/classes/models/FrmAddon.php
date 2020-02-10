@@ -272,7 +272,7 @@ class FrmAddon {
 		$message = '';
 		if ( empty( $this->license ) ) {
 			/* translators: %1$s: Plugin name, %2$s: Start link HTML, %3$s: end link HTML */
-			$message = sprintf( esc_html__( 'Your %1$s license key is missing. Please add it on the %2$slicenses page%3$s.', 'formidable' ), esc_html( $this->plugin_name ), '<a href="' . esc_url( admin_url( 'admin.php?page=formidable-settings&t=licenses_settings' ) ) . '">', '</a>' );
+			$message = sprintf( esc_html__( 'Your %1$s license key is missing. Please add it on the %2$slicenses page%3$s.', 'formidable' ), esc_html( $this->plugin_name ), '<a href="' . esc_url( admin_url( 'admin.php?page=formidable-settings' ) ) . '">', '</a>' );
 		} else {
 			$api    = new FrmFormApi( $this->license );
 			$errors = $api->error_for_license();
@@ -416,11 +416,11 @@ class FrmAddon {
 	private function has_been_cleared() {
 		$last_cleared = get_option( 'frm_last_cleared' );
 
-		return ( $last_cleared && $last_cleared > date( 'Y-m-d H:i:s', strtotime( '-5 minutes' ) ) );
+		return ( $last_cleared && $last_cleared > gmdate( 'Y-m-d H:i:s', strtotime( '-5 minutes' ) ) );
 	}
 
 	private function cleared_plugins() {
-		update_option( 'frm_last_cleared', date( 'Y-m-d H:i:s' ) );
+		update_option( 'frm_last_cleared', gmdate( 'Y-m-d H:i:s' ) );
 	}
 
 	private function is_license_revoked() {
@@ -434,14 +434,14 @@ class FrmAddon {
 			$last_checked = get_option( $this->transient_key() );
 		}
 
-		$seven_days_ago = date( 'Y-m-d H:i:s', strtotime( '-7 days' ) );
+		$seven_days_ago = gmdate( 'Y-m-d H:i:s', strtotime( '-7 days' ) );
 
 		if ( ! $last_checked || $last_checked < $seven_days_ago ) {
 			// check weekly
 			if ( is_multisite() ) {
-				update_site_option( $this->transient_key(), date( 'Y-m-d H:i:s' ) );
+				update_site_option( $this->transient_key(), gmdate( 'Y-m-d H:i:s' ) );
 			} else {
-				update_option( $this->transient_key(), date( 'Y-m-d H:i:s' ) );
+				update_option( $this->transient_key(), gmdate( 'Y-m-d H:i:s' ) );
 			}
 
 			$response = $this->get_license_status();
@@ -462,7 +462,8 @@ class FrmAddon {
 		FrmAppHelper::permission_check( 'frm_change_settings' );
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
-		if ( ! isset( $_POST['license'] ) || empty( $_POST['license'] ) ) {
+		$license = stripslashes( FrmAppHelper::get_param( 'license', '', 'post', 'sanitize_text_field' ) );
+		if ( empty( $license ) ) {
 			wp_die(
 				json_encode(
 					array(
@@ -473,7 +474,6 @@ class FrmAddon {
 			);
 		}
 
-		$license     = stripslashes( FrmAppHelper::get_param( 'license', '', 'post', 'sanitize_text_field' ) );
 		$plugin_slug = FrmAppHelper::get_param( 'plugin', '', 'post', 'sanitize_text_field' );
 		$this_plugin = self::get_addon( $plugin_slug );
 		$response    = $this_plugin->activate_license( $license );
@@ -553,14 +553,30 @@ class FrmAddon {
 		);
 	}
 
+	/**
+	 * @since 4.03
+	 */
+	public static function reset_cache() {
+		FrmAppHelper::permission_check( 'frm_change_settings' );
+		check_ajax_referer( 'frm_ajax', 'nonce' );
+
+		$this_plugin = self::set_license_from_post();
+		$this_plugin->delete_cache();
+
+		$response = array(
+			'success' => true,
+			'message' => __( 'Cache cleared', 'formidable' ),
+		);
+
+		echo json_encode( $response );
+		wp_die();
+	}
+
 	public static function deactivate() {
 		FrmAppHelper::permission_check( 'frm_change_settings' );
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
-		$plugin_slug          = FrmAppHelper::get_param( 'plugin', '', 'post', 'sanitize_text_field' );
-		$this_plugin          = self::get_addon( $plugin_slug );
-		$license              = $this_plugin->get_license();
-		$this_plugin->license = $license;
+		$this_plugin = self::set_license_from_post();
 
 		$response = array(
 			'success' => false,
@@ -583,6 +599,17 @@ class FrmAddon {
 
 		echo json_encode( $response );
 		wp_die();
+	}
+
+	/**
+	 * @since 4.03
+	 */
+	private static function set_license_from_post() {
+		$plugin_slug          = FrmAppHelper::get_param( 'plugin', '', 'post', 'sanitize_text_field' );
+		$this_plugin          = self::get_addon( $plugin_slug );
+		$license              = $this_plugin->get_license();
+		$this_plugin->license = $license;
+		return $this_plugin;
 	}
 
 	public function send_mothership_request( $action ) {

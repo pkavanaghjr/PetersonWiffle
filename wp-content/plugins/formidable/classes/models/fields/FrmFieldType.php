@@ -234,7 +234,7 @@ DEFAULT_HTML;
 
 		$field['html_name']     = $field_name;
 		$field['html_id']       = $html_id;
-		$field['default_value'] = maybe_unserialize( $field['default_value'] );
+		FrmAppHelper::unserialize_or_decode( $field['default_value'] );
 
 		$display = $this->display_field_settings();
 		include( $this->include_form_builder_file() );
@@ -369,10 +369,63 @@ DEFAULT_HTML;
 		}
 
 		$this->field_choices_heading( $args );
-		echo '<div class="frm_grid_container frm-collapse-me">';
+
+		echo '<div class="frm_grid_container frm-collapse-me' . esc_attr( $this->extra_field_choices_class() ) . '">';
 		include( FrmAppHelper::plugin_path() . '/classes/views/frm-fields/back-end/field-choices.php' );
 		$this->show_extra_field_choices( $args );
 		echo '</div>';
+	}
+
+	/**
+	 * @since 4.04
+	 */
+	public function show_field_options( $args ) {
+		if ( ! $this->should_continue_to_field_options( $args ) ) {
+			return;
+		}
+
+		$has_options = ! empty( $args['field']['options'] );
+		$short_name  = FrmAppHelper::truncate( strip_tags( str_replace( '"', '&quot;', $args['field']['name'] ) ), 20 );
+
+		/* translators: %s: Field name */
+		$option_title = sprintf( __( '%s Options', 'formidable' ), $short_name );
+
+		include( FrmAppHelper::plugin_path() . '/classes/views/frm-fields/back-end/field-options.php' );
+	}
+
+	/**
+	 * @since 4.04
+	 */
+	protected function should_continue_to_field_options( $args ) {
+		return in_array( $args['field']['type'], array( 'select', 'radio', 'checkbox' ) );
+	}
+
+	/**
+	 * @since 4.04
+	 */
+	protected function get_bulk_edit_string() {
+		return __( 'Bulk Edit Options', 'formidable' );
+	}
+
+	/**
+	 * @since 4.04
+	 */
+	protected function get_add_option_string() {
+		return __( 'Add Option', 'formidable' );
+	}
+
+	/**
+	 * @since 4.04
+	 */
+	protected function show_single_option( $args ) {
+		FrmFieldsHelper::show_single_option( $args['field'] );
+	}
+
+	/**
+	 * @since 4.04
+	 */
+	protected function extra_field_choices_class() {
+		return '';
 	}
 
 	/**
@@ -407,7 +460,7 @@ DEFAULT_HTML;
 	protected function field_choices_heading( $args ) {
 		$all_field_types = array_merge( FrmField::pro_field_selection(), FrmField::field_selection() );
 		?>
-		<h3>
+		<h3 <?php $this->field_choices_heading_attrs( $args ); ?>>
 			<?php
 			printf(
 				/* translators: %s: Field type */
@@ -418,6 +471,13 @@ DEFAULT_HTML;
 			<i class="frm_icon_font frm_arrowdown6_icon"></i>
 		</h3>
 		<?php
+	}
+
+	/**
+	 * @since 4.04
+	 */
+	protected function field_choices_heading_attrs( $args ) {
+		return;
 	}
 
 	/**
@@ -599,7 +659,8 @@ DEFAULT_HTML;
 			$values = (array) $this->field;
 		}
 
-		return maybe_unserialize( $values['options'] );
+		FrmAppHelper::unserialize_or_decode( $values['options'] );
+		return $values['options'];
 	}
 
 	/**
@@ -773,13 +834,26 @@ DEFAULT_HTML;
 		$this->add_aria_description( $args, $input_html );
 		$this->add_extra_html_atts( $args, $input_html );
 
-		return '<input type="' . esc_attr( $field_type ) . '" id="' . esc_attr( $args['html_id'] ) . '" name="' . esc_attr( $args['field_name'] ) . '" value="' . esc_attr( $this->field['value'] ) . '" ' . $input_html . '/>';
+		return '<input type="' . esc_attr( $field_type ) . '" id="' . esc_attr( $args['html_id'] ) . '" name="' . esc_attr( $args['field_name'] ) . '" value="' . esc_attr( $this->prepare_esc_value() ) . '" ' . $input_html . '/>';
 	}
 
 	protected function html5_input_type() {
 		$frm_settings = FrmAppHelper::get_settings();
 
 		return $frm_settings->use_html ? $this->type : 'text';
+	}
+
+	/**
+	 * If the value includes intentional entities, don't lose them.
+	 *
+	 * @since 4.03.01
+	 */
+	protected function prepare_esc_value() {
+		$value = $this->field['value'];
+		if ( strpos( $value, '&lt;' ) !== false ) {
+			$value = htmlentities( $value );
+		}
+		return $value;
 	}
 
 	/**
@@ -1122,7 +1196,8 @@ DEFAULT_HTML;
 			return $value;
 		}
 
-		$checked = is_array( $value ) ? $value : maybe_unserialize( $value );
+		$checked = $value;
+		FrmAppHelper::unserialize_or_decode( $checked );
 
 		if ( ! is_array( $checked ) ) {
 			$checked = explode( ',', $checked );

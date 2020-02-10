@@ -5,7 +5,7 @@
  * @author 		ThemeBoy
  * @category 	Admin
  * @package 	SportsPress_Tournaments
- * @version   2.6.15
+ * @version   2.6.21
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -336,7 +336,10 @@ class SP_Tournament_Meta_Boxes {
 				}
 				$new_title = implode( ' ' . get_option( 'sportspress_event_teams_delimiter', 'vs' ) . ' ', $team_names );
 
-				if ( ! strlen( $date ) && ! strlen( $new_title ) ) continue;
+				if ( ! strlen( $date ) && ! strlen( $new_title ) ) {
+					$event_ids[] = false;
+					continue;
+				}
 
 				// Update or add new event
 				if ( $id ) {

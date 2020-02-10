@@ -57,6 +57,7 @@ if ( is_array( $leagues ) ):
 		if ( sizeof( $leagues ) > 1 ) {
 			printf( '<h3 class="sp-post-caption sp-player-statistics-section">%s</h3>', $section_label );
 		}
+
 		
 		foreach ( $leagues as $league ):
 			$caption = $league->name;
@@ -80,6 +81,7 @@ if ( is_array( $leagues ) ):
 		endforeach;
 
 		if ( $show_career_totals ) {
+			echo '<script type="text/javascript" data-debug="true">console.log("$section_id: ",' . json_encode( $player->data( 0, false, $section_id ) ) . ');</script>';
 			sp_get_template( 'player-statistics-league.php', array(
 				'data' => $player->data( 0, false, $section_id ),
 				'caption' => __( 'Career Total', 'sportspress' ),

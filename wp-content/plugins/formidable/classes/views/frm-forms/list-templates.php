@@ -61,6 +61,19 @@
 			)
 		);
 		?>
+		<p class="frm-search" style="clear:none;max-width:200px;margin-right:5px">
+			<label class="screen-reader-text" for="filter-template-search-input">
+				<?php esc_html_e( 'Filter', 'formidable' ); ?>
+			</label>
+			<span class="frmfont frm_filter_icon"></span>
+			<select name="frm_filter_templates" id="filter-template-search-input" multiple="multiple" class="frm_multiselect frm-search-input frm-auto-search" data-tosearch="frm-template-row" data-placeholder="<?php esc_attr_e( 'Filter Templates', 'formidable' ); ?>">
+				<?php foreach ( $categories as $cat ) { ?>
+					<option value="<?php echo esc_attr( $cat ); ?>">
+						<?php echo esc_html( $cat ); ?>
+					</option>
+				<?php } ?>
+			</select>
+		</p>
 
 		<ul class="frm-nav-tabs">
 			<li class="frm-tabs">
@@ -85,6 +98,7 @@
 					continue;
 				}
 
+				$plan_required = FrmFormsHelper::get_plan_required( $template );
 				$link = FrmFormsHelper::get_template_install_link( $template, compact( 'pricing', 'license_type', 'plan_required' ) );
 				?>
 				<tr class="frm-template-row <?php echo esc_attr( $link['class'] === 'install-now' ? $link['class'] : '' ); ?>" id="frm-template-<?php echo esc_attr( $template['id'] ); ?>">
@@ -98,8 +112,6 @@
 						<h3><?php echo esc_html( preg_replace( '/(\sForm)?(\sTemplate)?$/', '', $template['name'] ) ); ?></h3>
 						<p><?php echo esc_html( $template['description'] ); ?></p>
 						<?php
-
-						$plan_required = FrmFormsHelper::get_plan_required( $template );
 
 						echo '<p class="frm_plan_required">';
 						if ( ! empty( $plan_required ) ) {
@@ -144,7 +156,12 @@
 		<?php if ( $expired ) { ?>
 			<br/>
 			<p class="frm_error_style">
-				<?php echo FrmAppHelper::kses( $error, 'a' ); // WPCS: XSS ok. ?>
+				<?php echo FrmAppHelper::kses( str_replace( 'Please resave your license on the Formidable Global Settings page to refresh this message.', '', $error ), 'a' ); // WPCS: XSS ok. ?>
+
+				<br/>
+				<a href="#" id="frm_reconnect_link" class="frm-show-authorized" data-refresh="1">
+					<?php esc_html_e( 'Check now for a recent upgrade or renewal', 'formidable' ); ?>
+				</a>
 			</p>
 		<?php } ?>
 		</div>

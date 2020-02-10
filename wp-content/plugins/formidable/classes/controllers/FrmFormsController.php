@@ -122,8 +122,10 @@ class FrmFormsController {
 		$id = FrmAppHelper::get_param( 'id', '', 'get', 'absint' );
 
 		$errors = FrmForm::validate( $_POST );
+		$warnings = FrmFormsHelper::check_for_warnings( $_POST );
+
 		if ( count( $errors ) > 0 ) {
-			return self::get_settings_vars( $id, $errors );
+			return self::get_settings_vars( $id, $errors, compact( 'warnings' ) );
 		}
 
 		do_action( 'frm_before_update_form_settings', $id );
@@ -132,7 +134,7 @@ class FrmFormsController {
 
 		$message = __( 'Settings Successfully Updated', 'formidable' );
 
-		return self::get_settings_vars( $id, array(), $message );
+		return self::get_settings_vars( $id, array(), compact( 'message', 'warnings' ) );
 	}
 
 	public static function update( $values = array() ) {
@@ -606,6 +608,7 @@ class FrmFormsController {
 	 */
 	public static function insert_form_button() {
 		if ( current_user_can( 'frm_view_forms' ) ) {
+			FrmAppHelper::load_admin_wide_js();
 			$menu_name = FrmAppHelper::get_menu_name();
 			$icon      = apply_filters( 'frm_media_icon', FrmAppHelper::svg_logo() );
 			echo '<a href="#TB_inline?width=50&height=50&inlineId=frm_insert_form" class="thickbox button add_media frm_insert_form" title="' . esc_attr__( 'Add forms and content', 'formidable' ) . '">' .
@@ -807,7 +810,26 @@ class FrmFormsController {
 
 		$pricing = FrmAppHelper::admin_upgrade_link( 'form-templates' );
 
+		$categories = self::get_template_categories( $templates );
+
 		require( FrmAppHelper::plugin_path() . '/classes/views/frm-forms/list-templates.php' );
+	}
+
+	/**
+	 * @since 4.03.01
+	 */
+	private static function get_template_categories( $templates ) {
+		$categories = array();
+		foreach ( $templates as $template ) {
+			if ( isset( $template['categories'] ) ) {
+				$categories = array_merge( $categories, $template['categories'] );
+			}
+		}
+		$exclude_cats = FrmFormsHelper::ignore_template_categories();
+		$categories = array_unique( $categories );
+		$categories = array_diff( $categories, $exclude_cats );
+		sort( $categories );
+		return $categories;
 	}
 
 	private static function add_user_templates( &$templates ) {
@@ -877,10 +899,25 @@ class FrmFormsController {
 		}
 	}
 
-	public static function get_settings_vars( $id, $errors = array(), $message = '' ) {
+	public static function get_settings_vars( $id, $errors = array(), $args = array() ) {
 		FrmAppHelper::permission_check( 'frm_edit_forms' );
 
 		global $frm_vars;
+
+		if ( ! is_array( $args ) ) {
+			// For reverse compatibility.
+			$args = array(
+				'message' => $args,
+			);
+		}
+
+		$defaults = array(
+			'message'  => '',
+			'warnings' => array(),
+		);
+		$args     = array_merge( $defaults, $args );
+		$message  = $args['message'];
+		$warnings = $args['warnings'];
 
 		$form   = FrmForm::getOne( $id );
 		$fields = FrmField::get_all_for_form( $id );
@@ -1290,6 +1327,8 @@ class FrmFormsController {
 		if ( isset( $_POST['frm_compact_fields'] ) ) {
 			FrmAppHelper::permission_check( 'frm_edit_forms' );
 
+			// Javascript needs to be allowed in some field settings.
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$json_vars = htmlspecialchars_decode( nl2br( str_replace( '&quot;', '"', wp_unslash( $_POST['frm_compact_fields'] ) ) ) );
 			$json_vars = json_decode( $json_vars, true );
 			if ( empty( $json_vars ) ) {

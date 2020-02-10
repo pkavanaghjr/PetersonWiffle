@@ -5,7 +5,7 @@ Plugin URI: http://tboy.co/pro
 Description: Integrate Google Maps to SportsPress.
 Author: ThemeBoy
 Author URI: http://themeboy.com
-Version: 2.6.18
+Version: 2.6.21
 */
 
 // Exit if accessed directly
@@ -17,7 +17,7 @@ if ( ! class_exists( 'SportsPress_Google_Maps' ) ) :
  * Main SportsPress Google Maps Class
  *
  * @class SportsPress_Google_Maps
- * @version	2.6.18
+ * @version	2.6.21
  */
 class SportsPress_Google_Maps {
 
@@ -30,14 +30,10 @@ class SportsPress_Google_Maps {
 
 		// Hooks
 		remove_all_actions( 'sp_venue_show_map', 10 );
-		remove_all_actions( 'sp_admin_geocoder_scripts', 10 );
 		remove_all_actions( 'sp_setup_geocoder_scripts', 10 );
 		remove_all_actions( 'sp_setup_venue_geocoder_scripts', 10 );
-		remove_all_actions( 'sp_admin_venue_scripts', 10 );
 		remove_all_actions( 'sp_frontend_venue_scripts', 10 );
 		add_action( 'sp_venue_show_map', array( $this, 'show_venue_map' ), 10, 5 );
-		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-		add_action( 'sp_admin_geocoder_scripts', array( $this, 'admin_geocoder_scripts' ), 10 );
 		add_action( 'sp_setup_geocoder_scripts', array( $this, 'setup_geocoder_scripts' ), 10 );
 		add_action( 'sp_setup_venue_geocoder_scripts', array( $this, 'setup_venue_geocoder_scripts' ), 10 );
 	}
@@ -47,7 +43,7 @@ class SportsPress_Google_Maps {
 	 */
 	private function define_constants() {
 		if ( !defined( 'SP_GOOGLE_MAPS_VERSION' ) )
-			define( 'SP_GOOGLE_MAPS_VERSION', '2.6.18' );
+			define( 'SP_GOOGLE_MAPS_VERSION', '2.6.21' );
 
 		if ( !defined( 'SP_GOOGLE_MAPS_URL' ) )
 			define( 'SP_GOOGLE_MAPS_URL', plugin_dir_url( __FILE__ ) );

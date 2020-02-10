@@ -72,6 +72,7 @@ class FrmField {
 			'file'           => array(
 				'name' => __( 'File Upload', 'formidable' ),
 				'icon' => 'frm_icon_font frm_upload_icon',
+				'message' => 'Add file uploads to save time and cut down on back-and-forth. Upgrade to Pro to get Upload fields and more.',
 			),
 			'rte'            => array(
 				'name' => __( 'Rich Text', 'formidable' ),
@@ -88,6 +89,7 @@ class FrmField {
 			'scale'          => array(
 				'name' => __( 'Scale', 'formidable' ),
 				'icon' => 'frm_icon_font frm_linear_scale_icon',
+				'message' => 'Add a set of radio buttons with whatever range you choose. <img src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/scale_field.png" alt="Scale Field" />',
 			),
 			'star'           => array(
 				'name' => __( 'Star Rating', 'formidable' ),
@@ -104,14 +106,17 @@ class FrmField {
 			'data'           => array(
 				'name' => __( 'Dynamic', 'formidable' ),
 				'icon' => 'frm_icon_font frm_sitemap_icon',
+				'message' => 'Create relationships between multiple forms. You can link a member to a team, a rating to a product, a comment to a submission, and much more.',
 			),
 			'lookup'         => array(
 				'name' => __( 'Lookup', 'formidable' ),
 				'icon' => 'frm_icon_font frm_search_icon',
+				'message' => 'Filter the options in the next field and automatically add values to other fields. Upgrade to Pro to get Lookup fields and more. <img src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/look-up_year-make-model.gif" alt="cascading lookup fields" />',
 			),
 			'divider|repeat' => array(
 				'name' => __( 'Repeater', 'formidable' ),
 				'icon' => 'frm_icon_font frm_repeater_icon',
+				'message' => 'Allow your visitors to add new sets of fields while filling out forms. Increase conversions while saving building time and server resources. <img src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/repeatable-section_frontend.gif" alt="Dynamically Add Form Fields with repeatable sections" />',
 			),
 			'end_divider'    => array(
 				'name'        => __( 'Section Buttons', 'formidable' ),
@@ -124,6 +129,7 @@ class FrmField {
 			'break'          => array(
 				'name' => __( 'Page Break', 'formidable' ),
 				'icon' => 'frm_icon_font frm_page_break_icon',
+				'message' => 'Get multi-paged forms with progress bars. Did you know you can upgrade to PRO to unlock multi-step forms with more awesome features?',
 			),
 			'form'           => array(
 				'name' => __( 'Embed Form', 'formidable' ),
@@ -146,6 +152,11 @@ class FrmField {
 				'name' => __( 'Address', 'formidable' ),
 				'icon' => 'frm_icon_font frm_location_icon',
 			),
+			'summary' => array(
+				'name'  => __( 'Summary', 'formidable' ),
+				'icon'  => 'frm_icon_font frm_file_text_icon',
+				'message' => 'Allow visitors to review their responses before a form is submitted. Upgrade to Pro to get Summary fields and more.',
+			),
 			'signature' => array(
 				'name'  => __( 'Signature', 'formidable' ),
 				'icon'  => 'frm_icon_font frm_signature_icon frm_show_upgrade',
@@ -155,6 +166,29 @@ class FrmField {
 				'name'  => __( 'Quiz Score', 'formidable' ),
 				'icon'  => 'frm_icon_font frm_percent_icon frm_show_upgrade',
 				'addon' => 'quizzes',
+			),
+			'ssa-appointment' => array(
+				'name'    => __( 'Appointment', 'formidable' ),
+				'icon'    => 'frm_icon_font frm_calendar_icon frm_show_upgrade',
+				'require' => 'Simply Schedule Appointments',
+				'message' => 'Appointment fields are an integration with <a href="https://simplyscheduleappointments.com/meet/formidable/">Simply Schedule Appointments</a>. Get started now to schedule appointments directly from your forms.
+					<img src="https://s3.amazonaws.com/fp.strategy11.com/images/appointments/appointments.png" alt="Scheduling" />',
+				'link'    => 'https://simplyscheduleappointments.com/meet/formidable/',
+			),
+			'product' => array(
+				'name'    => __( 'Product', 'formidable' ),
+				'icon'    => 'frm_icon_font frm_product_icon',
+				'section' => 'pricing',
+			),
+			'quantity' => array(
+				'name'    => __( 'Quantity', 'formidable' ),
+				'icon'    => 'frm_icon_font frm_quantity_icon',
+				'section' => 'pricing',
+			),
+			'total' => array(
+				'name'    => __( 'Total', 'formidable' ),
+				'icon'    => 'frm_icon_font frm_total_icon',
+				'section' => 'pricing',
 			),
 		);
 
@@ -203,7 +237,11 @@ class FrmField {
 
 		foreach ( $new_values as $k => $v ) {
 			if ( is_array( $v ) ) {
-				$new_values[ $k ] = serialize( $v );
+				if ( $k === 'default_value' ) {
+					$new_values[ $k ] = FrmAppHelper::maybe_json_encode( $v );
+				} else {
+					$new_values[ $k ] = serialize( $v );
+				}
 			}
 			unset( $k, $v );
 		}
@@ -313,10 +351,13 @@ class FrmField {
 		}
 
 		// serialize array values
-		foreach ( array( 'default_value', 'field_options', 'options' ) as $opt ) {
+		foreach ( array( 'field_options', 'options' ) as $opt ) {
 			if ( isset( $values[ $opt ] ) && is_array( $values[ $opt ] ) ) {
 				$values[ $opt ] = serialize( $values[ $opt ] );
 			}
+		}
+		if ( isset( $values['default_value'] ) && is_array( $values['default_value'] ) ) {
+			$values['default_value'] = json_encode( $values['default_value'] );
 		}
 
 		$query_results = $wpdb->update( $wpdb->prefix . 'frm_fields', $values, array( 'id' => $id ) );
@@ -614,7 +655,7 @@ class FrmField {
 	}
 
 	public static function getAll( $where = array(), $order_by = '', $limit = '', $blog_id = false ) {
-		$cache_key = maybe_serialize( $where ) . $order_by . 'l' . $limit . 'b' . $blog_id;
+		$cache_key = FrmAppHelper::maybe_json_encode( $where ) . $order_by . 'l' . $limit . 'b' . $blog_id;
 		if ( self::$use_cache ) {
 			// make sure old cache doesn't get saved as a transient
 			$results = wp_cache_get( $cache_key, 'frm_field' );
@@ -680,9 +721,10 @@ class FrmField {
 				FrmDb::set_cache( $result->id, $result, 'frm_field' );
 				FrmDb::set_cache( $result->field_key, $result, 'frm_field' );
 
-				$results[ $r_key ]->field_options = maybe_unserialize( $result->field_options );
-				$results[ $r_key ]->options       = maybe_unserialize( $result->options );
-				$results[ $r_key ]->default_value = maybe_unserialize( $result->default_value );
+				self::prepare_options( $result );
+				$results[ $r_key ]->field_options = $result->field_options;
+				$results[ $r_key ]->options       = $result->options;
+				$results[ $r_key ]->default_value = $result->default_value;
 
 				unset( $r_key, $result );
 			}
@@ -700,10 +742,15 @@ class FrmField {
 	 * @since 2.0
 	 */
 	private static function prepare_options( &$results ) {
-		$results->field_options = maybe_unserialize( $results->field_options );
+		FrmAppHelper::unserialize_or_decode( $results->field_options );
+		FrmAppHelper::unserialize_or_decode( $results->options );
 
-		$results->options       = maybe_unserialize( $results->options );
-		$results->default_value = maybe_unserialize( $results->default_value );
+		// Allow a single box to be checked for the default value.
+		$before = $results->default_value;
+		FrmAppHelper::unserialize_or_decode( $results->default_value );
+		if ( $before === $results->default_value && strpos( $before, '["' ) === 0 ) {
+			$results->default_value = FrmAppHelper::maybe_json_decode( $results->default_value );
+		}
 	}
 
 	/**
@@ -770,7 +817,7 @@ class FrmField {
 	}
 
 	public static function no_save_fields() {
-		return array( 'divider', 'end_divider', 'captcha', 'break', 'html', 'form' );
+		return array( 'divider', 'end_divider', 'captcha', 'break', 'html', 'form', 'summary' );
 	}
 
 	/**
@@ -912,7 +959,16 @@ class FrmField {
 	}
 
 	public static function get_option_in_array( $field, $option ) {
-		return isset( $field[ $option ] ) ? $field[ $option ] : '';
+
+		if ( isset( $field[ $option ] ) ) {
+			$this_option = $field[ $option ];
+		} elseif ( isset( $field['field_options'] ) && is_array( $field['field_options'] ) && isset( $field['field_options'][ $option ] ) ) {
+			$this_option = $field['field_options'][ $option ];
+		} else {
+			$this_option = '';
+		}
+
+		return $this_option;
 	}
 
 	public static function get_option_in_object( $field, $option ) {
@@ -998,10 +1054,19 @@ class FrmField {
 		$field_type = self::get_original_field_type( $field );
 		$data_type  = self::get_option( $field, 'data_type' );
 
-		return (
+		$is_field_type = (
 			$is_type === $field_type ||
 			( 'data' === $field_type && $is_type === $data_type ) ||
-			( 'lookup' === $field_type && $is_type === $data_type )
+			( 'lookup' === $field_type && $is_type === $data_type ) ||
+			( 'product' === $field_type && $is_type === $data_type )
 		);
+
+		/**
+		 * When a field type is checked, allow individual fields
+		 * to set the type.
+		 *
+		 * @since 4.04
+		 */
+		return apply_filters( 'frm_is_field_type', $is_field_type, compact( 'field', 'is_type' ) );
 	}
 }

@@ -209,52 +209,6 @@ class FrmAppController {
 	public static function pro_get_started_headline() {
 		self::review_request();
 		FrmAppHelper::min_pro_version_notice( '4.0' );
-
-		// Don't display this error as we're upgrading the thing, or if the user shouldn't see the message
-		if ( 'upgrade-plugin' == FrmAppHelper::simple_get( 'action', 'sanitize_title' ) || ! current_user_can( 'update_plugins' ) ) {
-			return;
-		}
-
-		$pro_installed = is_dir( WP_PLUGIN_DIR . '/formidable-pro' );
-		$authorized    = get_site_option( 'frmpro-authorized' ) && ! is_callable( 'load_formidable_pro' );
-		if ( ! $authorized ) {
-			return;
-		}
-
-		FrmAppHelper::load_admin_wide_js();
-
-		// user is authorized, but running free version
-		$download_url = '';
-		if ( $pro_installed ) {
-			// if pro version is installed, include link to activate it
-			$inst_install_url = wp_nonce_url( self_admin_url( 'plugins.php?action=activate&plugin=formidable-pro/formidable-pro.php' ), 'activate-plugin_formidable-pro/formidable-pro.php' );
-		} else {
-			$inst_install_url = '#';
-			$download_url     = FrmAddonsController::get_pro_download_url();
-
-			if ( empty( $download_url ) ) {
-				$inst_install_url = 'https://formidableforms.com/knowledgebase/install-formidable-forms/?utm_source=WordPress&utm_medium=get-started&utm_campaign=liteplugin';
-			}
-		}
-		?>
-		<div class="error frm_previous_install">
-			<?php
-			echo apply_filters( // WPCS: XSS ok.
-				'frm_pro_update_msg',
-				sprintf(
-					/* translators: %1$s: Start link HTML, %2$s: End link HTML, %3$s: Start link HTML, %4$s: End link HTML */
-					esc_html__( 'This site has been previously authorized to run Formidable Forms. %1$sInstall Formidable Pro%2$s or %3$sdeauthorize%4$s this site to continue running the free version and remove this message.', 'formidable' ),
-					'<br/><a href="' . esc_url( $inst_install_url ) . '" id="frm_install_link" target="_blank" data-prourl="' . esc_url( $download_url ) . '">',
-					'</a>',
-					'<a href="#" class="frm_deauthorize_link">',
-					'</a>'
-				),
-				esc_url( $inst_install_url )
-			);
-			?>
-			<div id="frm_install_message" class="hidden frm_hidden"></div>
-		</div>
-		<?php
 	}
 
 	/**
@@ -299,9 +253,22 @@ class FrmAppController {
 			'medium'  => 'builder',
 			'content' => 'upgrade',
 		);
+		$default_link = FrmAppHelper::admin_upgrade_link( $upgrade_link );
+
 		include( FrmAppHelper::plugin_path() . '/classes/views/shared/upgrade_overlay.php' );
 
 		include( FrmAppHelper::plugin_path() . '/classes/views/shared/confirm-overlay.php' );
+	}
+
+	public static function include_info_overlay() {
+		wp_enqueue_script( 'jquery-ui-dialog' );
+		wp_enqueue_style( 'jquery-ui-dialog' );
+
+		add_action( 'admin_footer', 'FrmAppController::info_overlay_html' );
+	}
+
+	public static function info_overlay_html() {
+		include( FrmAppHelper::plugin_path() . '/classes/views/shared/info-overlay.php' );
 	}
 
 	/**
@@ -453,6 +420,7 @@ class FrmAppController {
 
 			do_action( 'frm_enqueue_builder_scripts' );
 			self::include_upgrade_overlay();
+			self::include_info_overlay();
 		} elseif ( FrmAppHelper::is_view_builder_page() ) {
 			if ( isset( $_REQUEST['post_type'] ) ) {
 				$post_type = sanitize_title( wp_unslash( $_REQUEST['post_type'] ) );
@@ -472,6 +440,7 @@ class FrmAppController {
 				wp_enqueue_script( 'formidable_admin' );
 				wp_enqueue_style( 'formidable-admin' );
 				FrmAppHelper::localize_script( 'admin' );
+				self::include_info_overlay();
 			}
 		} elseif ( $pagenow == 'widgets.php' ) {
 			FrmAppHelper::load_admin_wide_js();

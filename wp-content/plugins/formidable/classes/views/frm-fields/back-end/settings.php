@@ -1,4 +1,4 @@
-<div class="frm-single-settings frm_hidden frm-fields" id="frm-single-settings-<?php echo esc_attr( $field['id'] ); ?>" data-fid="<?php echo esc_attr( $field['id'] ); ?>">
+<div class="frm-single-settings frm_hidden frm-fields frm-type-<?php echo esc_attr( $field['type'] ); ?>" id="frm-single-settings-<?php echo esc_attr( $field['id'] ); ?>" data-fid="<?php echo esc_attr( $field['id'] ); ?>">
 	<input type="hidden" name="frm_fields_submitted[]" value="<?php echo esc_attr( $field['id'] ); ?>" />
 	<input type="hidden" name="field_options[field_order_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['field_order'] ); ?>"/>
 
@@ -261,7 +261,7 @@ do_action( 'frm_before_field_options', $field );
 			<p class="frm6 frm_form_field">
 				<label><?php esc_html_e( 'Label Position', 'formidable' ); ?></label>
 				<select name="field_options[label_<?php echo esc_attr( $field['id'] ); ?>]">
-					<option value=""<?php selected( $field['label'], '' ); ?>>
+					<option value="" <?php selected( $field['label'], '' ); ?>>
 						<?php esc_html_e( 'Default', 'formidable' ); ?>
 					</option>
 					<?php
@@ -273,6 +273,11 @@ do_action( 'frm_before_field_options', $field );
 						?>
 						<option value="<?php echo esc_attr( $pos ); ?>"<?php selected( $field['label'], $pos ); ?>>
 							<?php echo esc_html( $pos_label ); ?>
+						</option>
+					<?php } ?>
+					<?php if ( $field['type'] === 'divider' ) { ?>
+						<option value="center" <?php selected( $field['label'], 'center' ); ?>>
+							<?php esc_html_e( 'Center', 'formidable' ); ?>
 						</option>
 					<?php } ?>
 				</select>
