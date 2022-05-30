@@ -1,3 +1,38 @@
+### WordPress ###
+# */wp-config.php
+# */wp-content/advanced-cache.php
+# */wp-content/wp-cache-config.php
+
+*.log
+wp-content/uploads/
+wp-content/backup-db/
+wp-content/backups/
+wp-content/blogs.dir/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/plugins/hello.php
+wp-content/themes/twenty*
+
+wp-admin/
+wp-includes/
+xmlrpc.php
+wp-blog-header.php
+readme.html
+wp-signup.php
+index.php
+wp-cron.php
+wp-config-sample.php
+wp-config.php
+wp-login.php
+wp-settings.php
+license.txt
+wp-mail.php
+wp-links-opml.php
+wp-load.php
+wp-activate.php
+wp-trackback.php
+wp-comments-post.php
+
 ### VVV Files ###
 vvv-hosts
 vvv-init.sh
@@ -21,21 +56,6 @@ wp-cli.yml
 node_modules
 node_modules/*
 
-
-### WordPress ###
-# */wp-config.php
-# */wp-content/advanced-cache.php
-# */wp-content/wp-cache-config.php
-
-*.log
-wp-content/uploads/
-wp-content/backup-db/
-wp-content/backups/
-wp-content/blogs.dir/
-wp-content/cache/
-wp-content/upgrade/
-wp-content/plugins/hello.php
-wp-content/themes/twenty*
 
 # /.htaccess
 /license.txt
