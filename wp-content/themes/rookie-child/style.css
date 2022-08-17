@@ -23,6 +23,27 @@ and Blueprint http://www.blueprintcss.org/
 */
 
 
+
+/************************************ 
+	CUSTOM STYLES - START
+*************************************/
+.btn{
+	
+}
+
+.no-bracket .entry-content .sp-template-tournament-bracket,
+.no-bracket .entry-content .sp-table-caption{
+	display:none !important;
+}
+
+
+
+
+/************************************
+	CUSTOM STYLES - END
+*************************************/
+
+
 /* Heading Font */
 h1,
 h2,

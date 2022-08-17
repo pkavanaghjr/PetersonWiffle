@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	die( 'You are not allowed to call this page directly.' );
+}
 
 /**
  * @since 2.04
@@ -26,8 +29,9 @@ class FrmTableHTMLGenerator {
 	/**
 	 * @var string
 	 * @since 2.04
+	 * @since 5.0.16 Changed scope from `private` to `protected`.
 	 */
-	private $direction = 'ltr';
+	protected $direction = 'ltr';
 
 	/**
 	 * @var bool
@@ -38,14 +42,24 @@ class FrmTableHTMLGenerator {
 	/**
 	 * @var string
 	 * @since 2.04
+	 * @since 5.0.16 Changed scope from `private` to `protected`.
 	 */
-	private $table_style = '';
+	protected $table_style = '';
 
 	/**
 	 * @var string
 	 * @since 2.04
+	 * @since 5.0.16 Changed scope from `private` to `protected`.
 	 */
-	private $td_style = '';
+	protected $td_style = '';
+
+	/**
+	 * Used to add a class in tables. Set in Pro.
+	 *
+	 * @var bool
+	 * @since 5.4.2
+	 */
+	public $is_child = false;
 
 	/**
 	 * FrmTableHTMLGenerator constructor.
@@ -179,8 +193,8 @@ class FrmTableHTMLGenerator {
 	private function get_color_markup( $color_markup ) {
 		$color_markup = trim( $color_markup );
 
-		//check if each character in string is valid hex digit
-		if ( ctype_xdigit( $color_markup ) ) {
+		// Check if each character in string is valid hex digit
+		if ( FrmAppHelper::ctype_xdigit( $color_markup ) ) {
 			$color_markup = '#' . $color_markup;
 		}
 
@@ -202,10 +216,11 @@ class FrmTableHTMLGenerator {
 	 * Get the table row style
 	 *
 	 * @since 2.04
+	 * @since 5.0.16 Changed scope from `private` to `protected`.
 	 *
 	 * @return string
 	 */
-	private function tr_style() {
+	protected function tr_style() {
 
 		if ( $this->type === 'shortcode' ) {
 			$tr_style = ' style="[frm-alt-color]"';
@@ -222,8 +237,9 @@ class FrmTableHTMLGenerator {
 	 * Switch the odd property from true to false or false to true
 	 *
 	 * @since 2.04
+	 * @since 5.0.16 Changed scope from `private` to `protected`.
 	 */
-	private function switch_odd() {
+	protected function switch_odd() {
 		if ( $this->type !== 'shortcode' ) {
 			$this->odd = ! $this->odd;
 		}
@@ -256,16 +272,14 @@ class FrmTableHTMLGenerator {
 	 *
 	 * @since 2.04
 	 *
-	 * @param string $label
-	 * @param string $value
+	 * @param string $label The label.
+	 * @param string $value The value.
 	 *
 	 * @return string
 	 */
 	public function generate_two_cell_table_row( $label, $value ) {
 		$row = '<tr' . $this->tr_style();
-		if ( $value === '' ) {
-			$row .= ' class="frm-empty-row"';
-		}
+		$row .= $this->add_row_class( $value === '' );
 		$row .= '>';
 
 		$label = '<th' . $this->td_style . '>' . wp_kses_post( $label ) . '</th>';
@@ -296,12 +310,35 @@ class FrmTableHTMLGenerator {
 	 * @return string
 	 */
 	public function generate_single_cell_table_row( $value ) {
-		$row = '<tr' . $this->tr_style() . '>';
+		$row = '<tr' . $this->tr_style();
+		$row .= $this->add_row_class();
+		$row .= '>';
 		$row .= '<td colspan="2"' . $this->td_style . '>' . $value . '</td>';
 		$row .= '</tr>' . "\r\n";
 
 		$this->switch_odd();
 
 		return $row;
+	}
+
+	/**
+	 * Add classes to the tr.
+	 *
+	 * @since 5.4.2
+	 * @param bool $empty If the value in the row is blank.
+	 */
+	protected function add_row_class( $empty = false ) {
+		$class = '';
+		if ( $empty ) {
+			// Only add this class on two cell rows.
+			$class .= ' frm-empty-row';
+		}
+		if ( $this->is_child ) {
+			$class .= ' frm-child-row';
+		}
+		if ( $class ) {
+			$class = ' class="' . trim( $class ) . '"';
+		}
+		return $class;
 	}
 }

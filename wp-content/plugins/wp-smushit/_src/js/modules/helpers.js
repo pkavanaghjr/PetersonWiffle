@@ -1,7 +1,6 @@
 /* global WP_Smush */
 /* global ajaxurl */
 /* global wp_smush_msgs */
-/* global smush_vars */
 
 /**
  * Helpers functions.
@@ -15,10 +14,10 @@
 		init: () => {},
 
 		/**
-		 * Convert bytes to human readable form.
+		 * Convert bytes to human-readable form.
 		 *
-		 * @param {number} a  Bytes
-		 * @param {number} b  Number of digits
+		 * @param {number} a Bytes
+		 * @param {number} b Number of digits
 		 * @return {*} Formatted Bytes
 		 */
 		formatBytes: ( a, b ) => {
@@ -42,7 +41,7 @@
 		/**
 		 * Get size from a string.
 		 *
-		 * @param {string} formattedSize  Formatter string
+		 * @param {string} formattedSize Formatter string
 		 * @return {*} Formatted Bytes
 		 */
 		getSizeFromString: ( formattedSize ) => {
@@ -52,7 +51,7 @@
 		/**
 		 * Get type from formatted string.
 		 *
-		 * @param {string} formattedSize  Formatted string
+		 * @param {string} formattedSize Formatted string
 		 * @return {*} Formatted Bytes
 		 */
 		getFormatFromString: ( formattedSize ) => {
@@ -70,7 +69,36 @@
 			const sign = num >= 0 ? 1 : -1;
 			// Keep the percentage below 100.
 			num = num > 100 ? 100 : num;
-			return ( Math.round( ( num * Math.pow( 10, decimals ) ) + ( sign * 0.001 ) ) / Math.pow( 10, decimals ) );
+			return (
+				Math.round( num * Math.pow( 10, decimals ) + sign * 0.001 ) /
+				Math.pow( 10, decimals )
+			);
+		},
+
+		/**
+		 * Displays a floating error message using the #wp-smush-ajax-notice container.
+		 *
+		 * @since 3.8.0
+		 *
+		 * @param {string} message
+		 */
+		showErrorNotice: ( message ) => {
+			if ( 'undefined' === typeof message ) {
+				return;
+			}
+
+			const noticeMessage = `<p>${ message }</p>`,
+				noticeOptions = {
+					type: 'error',
+					icon: 'info',
+				};
+
+			SUI.openNotice( 'wp-smush-ajax-notice', noticeMessage, noticeOptions );
+
+			const loadingButton = document.querySelector( '.sui-button-onload' );
+			if ( loadingButton ) {
+				loadingButton.classList.remove( 'sui-button-onload' );
+			}
 		},
 
 		/**
@@ -79,9 +107,13 @@
 		 * @since 3.2.0
 		 */
 		resetSettings: () => {
+			const _nonce = document.getElementById( 'wp_smush_reset' );
 			const xhr = new XMLHttpRequest();
 			xhr.open( 'POST', ajaxurl + '?action=reset_settings', true );
-			xhr.setRequestHeader( 'Content-type', 'application/x-www-form-urlencoded' );
+			xhr.setRequestHeader(
+				'Content-type',
+				'application/x-www-form-urlencoded'
+			);
 			xhr.onload = () => {
 				if ( 200 === xhr.status ) {
 					const res = JSON.parse( xhr.response );
@@ -89,12 +121,13 @@
 						window.location.href = wp_smush_msgs.smush_url;
 					}
 				} else {
-					window.console.log( 'Request failed.  Returned status of ' + xhr.status );
+					window.console.log(
+						'Request failed.  Returned status of ' + xhr.status
+					);
 				}
 			};
-			xhr.send( '_ajax_nonce=' + smush_vars.nonce.get_smush_status );
+			xhr.send( '_ajax_nonce=' + _nonce.value );
 		},
-
 	};
 
 	WP_Smush.helpers.init();

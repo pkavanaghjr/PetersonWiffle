@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @api {get} /redirection/v1/setting Get settings
  * @apiName GetSettings
@@ -37,7 +36,7 @@
  * @apiSuccess {String} settings.expire_redirect
  * @apiSuccess {String} settings.token
  * @apiSuccess {String} settings.monitor_post
- * @apiSuccess {String} settings.monitor_types
+ * @apiSuccess {String[]} settings.monitor_types
  * @apiSuccess {String} settings.associated_redirect
  * @apiSuccess {String} settings.auto_target
  * @apiSuccess {String} settings.expire_redirect
@@ -51,6 +50,9 @@
  * @apiSuccess {String} settings.https
  * @apiSuccess {String} settings.headers
  * @apiSuccess {String} settings.database
+ * @apiSuccess {String} settings.relocate Relocate this site to the specified domain (and path)
+ * @apiSuccess {String="www","nowww",""} settings.preferred_domain Preferred canonical domain
+ * @apiSuccess {String[]} settings.aliases Array of domains that will be redirected to the current WordPress site
  * @apiSuccess {Object[]} groups An array of groups
  * @apiSuccess {String} groups.label Name of the group
  * @apiSuccess {Integer} groups.value Group ID

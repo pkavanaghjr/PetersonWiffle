@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	die( 'You are not allowed to call this page directly.' );
+}
 
 class FrmStyle {
 	public $number = false; // Unique ID number of the current instance.
@@ -52,9 +55,11 @@ class FrmStyle {
 		foreach ( $all_instances as $number => $new_instance ) {
 			$new_instance = (array) $new_instance;
 			$this->id     = $new_instance['ID'];
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( $id != $this->id || ! $_POST || ! isset( $_POST['frm_style_setting'] ) ) {
 				$all_instances[ $number ] = $new_instance;
 
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( $new_instance['menu_order'] && $_POST && empty( $_POST['prev_menu_order'] ) && isset( $_POST['frm_style_setting']['menu_order'] ) ) {
 					// this style was set to default, so remove default setting on previous default style
 					$new_instance['menu_order'] = 0;
@@ -65,14 +70,11 @@ class FrmStyle {
 				continue;
 			}
 
-			$new_instance['post_title']   = isset( $_POST['frm_style_setting']['post_title'] ) ? sanitize_text_field( wp_unslash( $_POST['frm_style_setting']['post_title'] ) ) : '';
-
-			// Don't wp_unslash yet since it removes backslashes.
-			$new_instance['post_content'] = isset( $_POST['frm_style_setting']['post_content'] ) ? $_POST['frm_style_setting']['post_content'] : ''; // WPCS: sanitization ok.
-			FrmAppHelper::sanitize_value( 'sanitize_textarea_field', $new_instance['post_content'] );
+			$new_instance['post_title']   = isset( $_POST['frm_style_setting']['post_title'] ) ? sanitize_text_field( wp_unslash( $_POST['frm_style_setting']['post_title'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$new_instance['post_content'] = isset( $_POST['frm_style_setting']['post_content'] ) ? $this->sanitize_post_content( $this->unslash_post_content( $_POST['frm_style_setting']['post_content'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing
 			$new_instance['post_type']    = FrmStylesController::$post_type;
 			$new_instance['post_status']  = 'publish';
-			$new_instance['menu_order']   = isset( $_POST['frm_style_setting']['menu_order'] ) ? absint( $_POST['frm_style_setting']['menu_order'] ) : 0;
+			$new_instance['menu_order']   = isset( $_POST['frm_style_setting']['menu_order'] ) ? absint( $_POST['frm_style_setting']['menu_order'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 			if ( empty( $id ) ) {
 				$new_instance['post_name'] = $new_instance['post_title'];
@@ -86,7 +88,12 @@ class FrmStyle {
 				}
 
 				if ( $this->is_color( $setting ) ) {
-					$new_instance['post_content'][ $setting ] = str_replace( '#', '', $new_instance['post_content'][ $setting ] );
+					$color_val = $new_instance['post_content'][ $setting ];
+					if ( $color_val !== '' && 0 === strpos( $color_val, 'rgb' ) ) {
+						// maybe sanitize if invalid rgba value is entered
+						$this->maybe_sanitize_rgba_value( $color_val );
+					}
+					$new_instance['post_content'][ $setting ] = str_replace( '#', '', $color_val );
 				} elseif ( in_array( $setting, array( 'submit_style', 'important_style', 'auto_width' ) )
 					&& ! isset( $new_instance['post_content'][ $setting ] )
 					) {
@@ -105,6 +112,116 @@ class FrmStyle {
 		$this->save_settings();
 
 		return $action_ids;
+	}
+
+	/**
+	 * Sanitize custom color values and convert it to valid one filling missing values.
+	 *
+	 * @since 5.3.2
+	 *
+	 * @param string $color_val, The color value, by reference.
+	 * @return void
+	 */
+	private function maybe_sanitize_rgba_value( &$color_val ) {
+		if ( preg_match( '/(rgb|rgba)\(/', $color_val ) !== 1 ) {
+			return;
+		}
+
+		$color_val = trim( $color_val );
+		$patterns  = array( '/rgba\((\s*\d+\s*,){3}[[0-1]\.]+\)/', '/rgb\((\s*\d+\s*,){2}\s*[\d]+\)/' );
+		foreach ( $patterns as $pattern ) {
+			if ( preg_match( $pattern, $color_val ) === 1 ) {
+				return;
+			}
+		}
+
+		if ( substr( $color_val, -1 ) !== ')' ) {
+			$color_val .= ')';
+		}
+
+		$color_rgba            = substr( $color_val, strpos( $color_val, '(' ) + 1, strlen( $color_val ) - strpos( $color_val, '(' ) - 2 );
+		$length_of_color_codes = strpos( $color_val, '(' );
+		$new_color_values      = array();
+
+		// replace empty values by 0 or 1 (if alpha position).
+		foreach ( explode( ',', $color_rgba ) as $index => $value ) {
+			$new_value             = null;
+			$value_is_empty_string = '' === trim( $value ) || '' === $value;
+
+			if ( 3 === $length_of_color_codes || ( $index !== $length_of_color_codes - 1 ) ) {
+				// insert a value for r, g, or b
+				if ( $value < 0 ) {
+					$new_value = 0;
+				} elseif ( $value > 255 ) {
+					$new_value = 255;
+				} elseif ( $value_is_empty_string ) {
+					$new_value = 0;
+				}
+			} else {
+				// insert a value for alpha
+				if ( $value_is_empty_string ) {
+					$new_value = 4 === $length_of_color_codes ? 1 : 0;
+				} elseif ( $value > 1 || $value < 0 ) {
+					$new_value = 1;
+				}
+			}
+
+			$new_color_values[] = null === $new_value ? $value : $new_value;
+		}
+
+		// add more 0s and 1 (if alpha position) if needed.
+		$missing_values = $length_of_color_codes - count( $new_color_values );
+		if ( $missing_values > 1 ) {
+			$insert_values = array_fill( 0, $missing_values - 1, 0 );
+			$last_value    = 4 === $length_of_color_codes ? 1 : 0;
+			array_push( $insert_values, $last_value );
+		} elseif ( $missing_values === 1 ) {
+			$insert_values = 4 === $length_of_color_codes ? array( 1 ) : array( 0 );
+		}
+		if ( ! empty( $insert_values ) ) {
+			$new_color_values = array_merge( $new_color_values, $insert_values );
+		}
+
+		$new_color = implode( ',', $new_color_values );
+		$prefix    = substr( $color_val, 0, strpos( $color_val, '(' ) + 1 );
+		$new_color = $prefix . $new_color . ')';
+
+		$color_val = $new_color;
+	}
+
+	/**
+	 * Unslash everything in post_content but custom_css
+	 *
+	 * @since 5.0.13
+	 *
+	 * @param array $settings
+	 * @return array
+	 */
+	private function unslash_post_content( $settings ) {
+		$custom_css             = isset( $settings['custom_css'] ) ? $settings['custom_css'] : '';
+		$settings               = wp_unslash( $settings );
+		$settings['custom_css'] = $custom_css;
+		return $settings;
+	}
+
+	/**
+	 * @since 5.0.13
+	 *
+	 * @param array $settings
+	 * @return array
+	 */
+	public function sanitize_post_content( $settings ) {
+		$defaults           = $this->get_defaults();
+		$valid_keys         = array_keys( $defaults );
+		$sanitized_settings = array();
+		foreach ( $valid_keys as $key ) {
+			if ( isset( $settings[ $key ] ) ) {
+				$sanitized_settings[ $key ] = sanitize_textarea_field( $settings[ $key ] );
+			} else {
+				$sanitized_settings[ $key ] = $defaults[ $key ];
+			}
+		}
+		return $sanitized_settings;
 	}
 
 	/**
@@ -164,7 +281,7 @@ class FrmStyle {
 		$css .= preg_replace( '/\/\*(.|\s)*?\*\//', '', str_replace( array( "\r\n", "\r", "\n", "\t", '    ' ), '', ob_get_contents() ) );
 		ob_end_clean();
 
-		return $css;
+		return FrmStylesController::replace_relative_url( $css );
 	}
 
 	private function clear_cache() {
@@ -337,19 +454,20 @@ class FrmStyle {
 			'fieldset_padding'  => '0 0 15px 0',
 			'fieldset_bg_color' => '',
 
-			'title_size'              => '20px',
+			'title_size'              => '40px',
 			'title_color'             => '444444',
 			'title_margin_top'        => '10px',
-			'title_margin_bottom'     => '10px',
+			'title_margin_bottom'     => '60px',
 			'form_desc_size'          => '14px',
 			'form_desc_color'         => '666666',
 			'form_desc_margin_top'    => '10px',
 			'form_desc_margin_bottom' => '25px',
+			'form_desc_padding'       => '0',
 
-			'font'            => '"Lucida Grande","Lucida Sans Unicode",Tahoma,sans-serif',
-			'font_size'       => '14px',
-			'label_color'     => '444444',
-			'weight'          => 'bold',
+			'font'            => '',
+			'font_size'       => '15px',
+			'label_color'     => '3f4b5b',
+			'weight'          => 'normal',
 			'position'        => 'none',
 			'align'           => 'left',
 			'width'           => '150px',
@@ -374,7 +492,7 @@ class FrmStyle {
 			'field_weight'       => 'normal',
 			'text_color'         => '555555',
 			//'border_color_hv'   => 'cccccc',
-			'border_color'       => 'cccccc',
+			'border_color'       => 'BFC3C8',
 			'field_border_width' => '1px',
 			'field_border_style' => 'solid',
 
@@ -404,7 +522,7 @@ class FrmStyle {
 			'section_weight'       => 'bold',
 			'section_pad'          => '15px 0 3px 0',
 			'section_mar_top'      => '15px',
-			'section_mar_bottom'   => '12px',
+			'section_mar_bottom'   => '30px',
 			'section_bg_color'     => '',
 			'section_border_color' => 'e8e8e8',
 			'section_border_width' => '2px',
@@ -413,20 +531,21 @@ class FrmStyle {
 			'collapse_icon'        => '6',
 			'collapse_pos'         => 'after',
 			'repeat_icon'          => '1',
+			'repeat_icon_color'    => 'ffffff',
 
 			'submit_style'               => false,
-			'submit_font_size'           => '14px',
+			'submit_font_size'           => '15px',
 			'submit_width'               => 'auto',
 			'submit_height'              => 'auto',
-			'submit_bg_color'            => 'ffffff',
-			'submit_border_color'        => 'cccccc',
+			'submit_bg_color'            => '579AF6',
+			'submit_border_color'        => '579AF6',
 			'submit_border_width'        => '1px',
-			'submit_text_color'          => '444444',
+			'submit_text_color'          => 'ffffff',
 			'submit_weight'              => 'normal',
 			'submit_border_radius'       => '4px',
 			'submit_bg_img'              => '',
 			'submit_margin'              => '10px',
-			'submit_padding'             => '6px 11px',
+			'submit_padding'             => '10px 20px',
 			'submit_shadow_color'        => 'eeeeee',
 			'submit_hover_bg_color'      => 'efefef',
 			'submit_hover_color'         => '444444',
@@ -448,11 +567,11 @@ class FrmStyle {
 
 			'important_style' => false,
 
-			'progress_bg_color'        => 'dddddd',
+			'progress_bg_color'        => 'eaeaea',
 			'progress_active_color'    => 'ffffff',
-			'progress_active_bg_color' => '008ec2',
-			'progress_color'           => 'ffffff',
-			'progress_border_color'    => 'dfdfdf',
+			'progress_active_bg_color' => '579AF6',
+			'progress_color'           => '3f4b5b',
+			'progress_border_color'    => 'E5E5E5',
 			'progress_border_size'     => '2px',
 			'progress_size'            => '30px',
 

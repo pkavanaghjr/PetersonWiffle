@@ -1,4 +1,8 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	die( 'You are not allowed to call this page directly.' );
+}
+
 /**
  * @since 3.0
  */
@@ -149,7 +153,7 @@ class FrmFieldFormHtml {
 		$this->html = str_replace( '[key]', $this->field_obj->get_field_column( 'field_key' ), $this->html );
 
 		//replace [field_name]
-		$this->html = str_replace( '[field_name]', $this->field_obj->get_field_column( 'name' ), $this->html );
+		$this->html = str_replace( '[field_name]', FrmAppHelper::maybe_kses( $this->field_obj->get_field_column( 'name' ) ), $this->html );
 	}
 
 	/**
@@ -179,7 +183,7 @@ class FrmFieldFormHtml {
 	 */
 	private function replace_description_shortcode() {
 		$this->maybe_add_description_id();
-		$description = $this->field_obj->get_field_column( 'description' );
+		$description = FrmAppHelper::maybe_kses( $this->field_obj->get_field_column( 'description' ) );
 		FrmShortcodeHelper::remove_inline_conditions( ( $description && $description != '' ), 'description', $description, $this->html );
 	}
 
@@ -226,7 +230,37 @@ class FrmFieldFormHtml {
 	private function replace_error_shortcode() {
 		$this->maybe_add_error_id();
 		$error = isset( $this->pass_args['errors'][ 'field' . $this->field_id ] ) ? $this->pass_args['errors'][ 'field' . $this->field_id ] : false;
+
+		if ( ! empty( $error ) && false === strpos( $this->html, 'role="alert"' ) && FrmAppHelper::should_include_alert_role_on_field_errors() ) {
+			$error_body = self::get_error_body( $this->html );
+			if ( is_string( $error_body ) && false === strpos( $error_body, 'role=' ) ) {
+				$new_error_body = preg_replace( '/class="frm_error/', 'role="alert" class="frm_error', $error_body, 1 );
+				$this->html     = str_replace( '[if error]' . $error_body . '[/if error]', '[if error]' . $new_error_body . '[/if error]', $this->html );
+			}
+		}
+
 		FrmShortcodeHelper::remove_inline_conditions( ! empty( $error ), 'error', $error, $this->html );
+	}
+
+	/**
+	 * Pull the HTML between [if error] and [/if error] shortcodes.
+	 *
+	 * @param string $html
+	 * @return string|false
+	 */
+	private static function get_error_body( $html ) {
+		$start = strpos( $html, '[if error]' );
+		if ( false === $start ) {
+			return false;
+		}
+
+		$end = strpos( $html, '[/if error]', $start );
+		if ( false === $end ) {
+			return false;
+		}
+
+		$error_body = substr( $html, $start + 10, $end - $start - 10 );
+		return $error_body;
 	}
 
 	/**
@@ -359,9 +393,7 @@ class FrmFieldFormHtml {
 			unset( $shortcode_atts['class'] );
 		}
 
-		if ( isset( $this->pass_args['errors'][ 'field' . $this->field_id ] ) ) {
-			$shortcode_atts['aria-invalid'] = 'true';
-		}
+		$shortcode_atts['aria-invalid'] = isset( $this->pass_args['errors'][ 'field' . $this->field_id ] ) ? 'true' : 'false';
 
 		$this->field_obj->set_field_column( 'shortcodes', $shortcode_atts );
 
@@ -377,9 +409,6 @@ class FrmFieldFormHtml {
 	private function add_class_to_label() {
 		$label_class = $this->field_obj->get_label_class();
 		$this->html  = str_replace( '[label_position]', $label_class, $this->html );
-		if ( $this->field_obj->get_field_column( 'label' ) == 'inside' && $this->field_obj->get_field_column( 'value' ) != '' ) {
-			$this->html = str_replace( 'frm_primary_label', 'frm_primary_label frm_visible', $this->html );
-		}
 	}
 
 	/**
@@ -421,7 +450,13 @@ class FrmFieldFormHtml {
 		// Add label position class
 		$settings = $this->field_obj->display_field_settings();
 		if ( isset( $settings['label_position'] ) && $settings['label_position'] ) {
-			$classes .= ' frm_' . $this->field_obj->get_field_column( 'label' ) . '_container';
+			$label_position = $this->field_obj->get_field_column( 'label' );
+			$classes .= ' frm_' . $label_position . '_container';
+
+			// Add class if field has value, to be used for floating label styling.
+			if ( 'inside' === $label_position && $this->field_obj->get_field_column( 'value' ) ) {
+				$classes .= ' frm_label_float_top';
+			}
 		}
 
 		// Add CSS layout classes

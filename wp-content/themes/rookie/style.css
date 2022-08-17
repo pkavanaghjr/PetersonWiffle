@@ -4,7 +4,11 @@ Theme URI: https://www.themeboy.com/rookie/
 Author: ThemeBoy
 Author URI: https://www.themeboy.com
 Description: Rookie is a fully responsive theme made for sports organisations looking to use the SportsPress plugin. Once you’ve installed the theme and SportsPress, you'll be able to select a preset for your sport and demo content to help you get started on building your sports website.
-Version: 1.5.3
+Version: 1.5.4
+Requires at least: 3.8
+Tested up to: 5.7
+Requires PHP: 5.6
+Stable tag: 1.5.4
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: rookie
@@ -185,6 +189,8 @@ input[type="email"],
 input[type="url"],
 input[type="password"],
 input[type="search"],
+input[type="tel"],
+input[type="date"],
 textarea {
     color: #666;
     border: 1px solid #ccc;
@@ -196,6 +202,8 @@ input[type="email"]:focus,
 input[type="url"]:focus,
 input[type="password"]:focus,
 input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
 textarea:focus {
     color: #111;
 }
@@ -653,18 +661,21 @@ a:hover .page-title:hover {
 
 .sp-template-countdown .event-name,
 .sp-template-countdown .event-venue,
-.sp-template-countdown .event-league {
+.sp-template-countdown .event-league,
+.sp-template-countdown .event-date {
     background: #f4f4f4;
     border: 1px solid #e0e0e0;
 }
 
 .sp-template-countdown .event-venue,
-.sp-template-countdown .event-league {
+.sp-template-countdown .event-league,
+.sp-template-countdown .event-date {
     border-top: none;
 }
 
 .sp-template-countdown .event-venue,
-.sp-template-countdown .event-league {
+.sp-template-countdown .event-league,
+.sp-template-countdown .event-date {
     font-weight: normal;
 }
 

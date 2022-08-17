@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	die( 'You are not allowed to call this page directly.' );
+}
 
 class FrmFormApi {
 
@@ -61,33 +64,43 @@ class FrmFormApi {
 		}
 
 		$addons = $this->get_cached();
-		if ( ! empty( $addons ) ) {
+		if ( is_array( $addons ) ) {
 			return $addons;
 		}
 
-		$response = wp_remote_get( $url );
+		// We need to know the version number to allow different downloads.
+		$agent = 'formidable/' . FrmAppHelper::plugin_version();
+		if ( class_exists( 'FrmProDb' ) ) {
+			$agent = 'formidable-pro/' . FrmProDb::$plug_version;
+		}
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout'    => 25,
+				'user-agent' => $agent . '; ' . get_bloginfo( 'url' ),
+			)
+		);
+
 		if ( is_array( $response ) && ! is_wp_error( $response ) ) {
-			$addons = $response['body'];
-			if ( ! empty( $addons ) ) {
-				$addons = json_decode( $addons, true );
+			$addons = $response['body'] ? json_decode( $response['body'], true ) : array();
+		}
 
-				foreach ( $addons as $k => $addon ) {
-					if ( ! isset( $addon['categories'] ) ) {
-						continue;
-					}
-					$cats = array_intersect( $this->skip_categories(), $addon['categories'] );
-					if ( ! empty( $cats ) ) {
-						unset( $addons[ $k ] );
-					}
-				}
+		if ( ! is_array( $addons ) ) {
+			$addons = array();
+		}
 
-				$this->set_cached( $addons );
+		foreach ( $addons as $k => $addon ) {
+			if ( ! isset( $addon['categories'] ) ) {
+				continue;
+			}
+			$cats = array_intersect( $this->skip_categories(), $addon['categories'] );
+			if ( ! empty( $cats ) ) {
+				unset( $addons[ $k ] );
 			}
 		}
 
-		if ( empty( $addons ) ) {
-			return array();
-		}
+		$this->set_cached( $addons );
 
 		return $addons;
 	}
@@ -153,6 +166,8 @@ class FrmFormApi {
 	protected function get_cached() {
 		$cache = get_option( $this->cache_key );
 
+		FrmAppHelper::filter_gmt_offset();
+
 		if ( empty( $cache ) || empty( $cache['timeout'] ) || current_time( 'timestamp' ) > $cache['timeout'] ) {
 			return false; // Cache is expired
 		}
@@ -171,6 +186,8 @@ class FrmFormApi {
 	 * @since 3.06
 	 */
 	protected function set_cached( $addons ) {
+		FrmAppHelper::filter_gmt_offset();
+
 		$data = array(
 			'timeout' => strtotime( $this->cache_timeout, current_time( 'timestamp' ) ),
 			'value'   => json_encode( $addons ),

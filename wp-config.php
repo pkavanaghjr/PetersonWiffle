@@ -28,7 +28,6 @@ else{
 
 switch(SERVER_NAME):
 	case 'wiffle.patkavanaghjr.com':
-	default:
 		define( 'WP_SITEURL', 'http://wiffle.patkavanaghjr.com/' );
 		define( 'WP_HOME', 'http://wiffle.patkavanaghjr.com/' );
 
@@ -44,9 +43,9 @@ switch(SERVER_NAME):
 		define( 'DB_HOST', 'localhost' );
 	break;
 
-	case 'tourneys.local':
-		define( 'WP_SITEURL', 'http://tourneys.local:8888' );
-		define( 'WP_HOME', 'http://tourneys.local:8888' );
+	default:
+		define( 'WP_SITEURL', 'http://localhost:8888/wiffle.pkjr.com/PetersonWiffle/' );
+		define( 'WP_HOME', 'http://localhost:8888/wiffle.pkjr.com/PetersonWiffle/' );
 
 		/** The name of the database for WordPress */
 		define( 'DB_NAME', 'pkj_tourney' );

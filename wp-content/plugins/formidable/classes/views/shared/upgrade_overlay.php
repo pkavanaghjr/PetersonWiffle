@@ -1,4 +1,9 @@
-<div id="frm_upgrade_modal" class="frm_hidden settings-lite-cta">
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	die( 'You are not allowed to call this page directly.' );
+}
+?>
+<div id="frm_upgrade_modal" class="frm_hidden frm-modal settings-lite-cta">
 	<div class="metabox-holder">
 		<div class="postbox">
 			<a href="#" class="dismiss alignright" title="<?php esc_attr_e( 'Dismiss this message', 'formidable' ); ?>">
@@ -10,11 +15,13 @@
 				<h2>
 					<?php
 					printf(
-						/* translators: %s: Feature name */
-						esc_html__( '%s are not installed', 'formidable' ),
-						'<span class="frm_feature_label"></span>'
+						/* translators: %$1s: Feature name, %$2s: open span tag, %$3s: close span tag. */
+						esc_html__( '%1$s %2$sare not installed%3$s', 'formidable' ),
+						'<span class="frm_feature_label"></span>',
+						'<span class="frm_are_not_installed">',
+						'</span>'
 					);
-					?> 
+					?>
 				</h2>
 				<div class="cta-inside">
 
@@ -38,7 +45,7 @@
 					$message = sprintf( esc_html( $message ), '<span class="frm_feature_label"></span>' );
 					?>
 					<p id="frm-upgrade-message" data-default="<?php echo esc_attr( $message ); ?>">
-						<?php echo FrmAppHelper::kses( $message, array( 'span' ) ); // WPCS: XSS ok. ?>
+						<?php echo FrmAppHelper::kses( $message, array( 'span' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</p>
 					<?php if ( $is_pro ) { ?>
 						<a href="<?php echo esc_url( $default_link ); ?>" class="button button-primary frm-button-primary" id="frm-upgrade-modal-link" data-default="<?php echo esc_url( $default_link ); ?>">

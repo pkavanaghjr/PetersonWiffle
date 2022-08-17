@@ -120,13 +120,15 @@ class Red_Apache_File extends Red_FileIO {
 	private function is_str_regex( $url ) {
 		$regex  = '()[]$^?+.';
 		$escape = false;
+		$len = strlen( $url );
 
-		for ( $x = 0; $x < strlen( $url ); $x++ ) {
+		for ( $x = 0; $x < $len; $x++ ) {
 			$escape = false;
+			$char = substr( $url, $x, 1 );
 
-			if ( $url{$x} === '\\' ) {
+			if ( $char === '\\' ) {
 				$escape = true;
-			} elseif ( strpos( $regex, $url{$x} ) !== false && ! $escape ) {
+			} elseif ( strpos( $regex, $char ) !== false && ! $escape ) {
 				return true;
 			}
 		}
@@ -167,13 +169,21 @@ class Red_Apache_File extends Red_FileIO {
 	private function get_code( $code ) {
 		if ( strpos( $code, '301' ) !== false || stripos( $code, 'permanent' ) !== false ) {
 			return 301;
-		} elseif ( strpos( $code, '302' ) !== false ) {
+		}
+
+		if ( strpos( $code, '302' ) !== false ) {
 			return 302;
-		} elseif ( strpos( $code, '307' ) !== false || stripos( $code, 'seeother' ) !== false ) {
+		}
+
+		if ( strpos( $code, '307' ) !== false || stripos( $code, 'seeother' ) !== false ) {
 			return 307;
-		} elseif ( strpos( $code, '404' ) !== false || stripos( $code, 'forbidden' ) !== false || strpos( $code, 'F' ) !== false ) {
+		}
+
+		if ( strpos( $code, '404' ) !== false || stripos( $code, 'forbidden' ) !== false || strpos( $code, 'F' ) !== false ) {
 			return 404;
-		} elseif ( strpos( $code, '410' ) !== false || stripos( $code, 'gone' ) !== false || strpos( $code, 'G' ) !== false ) {
+		}
+
+		if ( strpos( $code, '410' ) !== false || stripos( $code, 'gone' ) !== false || strpos( $code, 'G' ) !== false ) {
 			return 410;
 		}
 

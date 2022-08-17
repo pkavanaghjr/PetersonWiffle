@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	die( 'You are not allowed to call this page directly.' );
+}
+?>
 <div id="form_entries_page" class="frm_wrap frm_list_entry_page">
 	<?php if ( $form ) { ?>
 	<div class="frm_page_container">
@@ -9,6 +14,7 @@
 				'label'       => __( 'Form Entries', 'formidable' ),
 				'form'        => $form,
 				'close'       => $form ? admin_url( 'admin.php?page=formidable-entries&form=' . $form->id ) : '',
+				'import_link' => $form ? false : true,
 			)
 		);
 		?>
@@ -24,6 +30,9 @@
 						)
 					);
 					?>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=formidable-import' ) ); ?>" class="button button-secondary frm-button-secondary frm_animate_bg">
+						<?php esc_html_e( 'Import', 'formidable' ); ?>
+					</a>
 				</h2>
 				<?php if ( ! FrmAppHelper::pro_is_installed() ) { ?>
 				<div class="clear"></div>
@@ -43,6 +52,7 @@
 				<?php require( FrmAppHelper::plugin_path() . '/classes/views/shared/errors.php' ); ?>
 				<?php $wp_list_table->display(); ?>
 			</form>
+			<?php do_action( 'frm_page_footer', array( 'table' => $wp_list_table ) ); ?>
 		</div>
 	<?php if ( $form ) { ?>
 	</div>

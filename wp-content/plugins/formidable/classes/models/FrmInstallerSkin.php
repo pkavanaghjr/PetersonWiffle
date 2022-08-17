@@ -67,10 +67,22 @@ class FrmInstallerSkin extends WP_Upgrader_Skin {
 	public function error( $errors ) {
 		if ( ! empty( $errors ) ) {
 			if ( ! is_string( $errors ) ) {
-				$errors = $errors->get_error_message();
+				$error   = $errors->get_error_message();
+				$message = $errors->get_error_data();
+				$errors  = $error . ' ' . $message;
 			}
-			echo json_encode( array( 'error' => $errors ) );
-			wp_die();
+			echo json_encode(
+				array(
+					'error'   => $errors,
+					'message' => $errors,
+					'success' => false,
+				)
+			);
+			if ( wp_doing_ajax() ) {
+				wp_die();
+			} else {
+				die();
+			}
 		}
 	}
 
@@ -81,7 +93,8 @@ class FrmInstallerSkin extends WP_Upgrader_Skin {
 	 * @since 3.04.02
 	 *
 	 * @param string $string The feedback string.
+	 * @param mixed  ...$args Optional text replacements.
 	 */
-	public function feedback( $string ) {}
+	public function feedback( $string, ...$args ) {}
 
 }

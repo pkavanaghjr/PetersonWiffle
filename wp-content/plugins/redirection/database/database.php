@@ -1,7 +1,7 @@
 <?php
 
-include_once dirname( __FILE__ ) . '/database-status.php';
-include_once dirname( __FILE__ ) . '/database-upgrader.php';
+require_once __DIR__ . '/database-status.php';
+require_once __DIR__ . '/database-upgrader.php';
 
 class Red_Database {
 	/**
@@ -28,7 +28,7 @@ class Red_Database {
 				$upgrader = Red_Database_Upgrader::get( $upgrade );
 
 				$stage_present = in_array( $current_stage, array_keys( $upgrader->get_stages() ), true );
-				$same_version = $current_stage === false && version_compare( $upgrade['version'], $current_version, 'g' );
+				$same_version = $current_stage === false && version_compare( $upgrade['version'], $current_version, 'gt' );
 
 				if ( $stage_present || $same_version ) {
 					$found = true;
@@ -159,6 +159,11 @@ class Red_Database {
 				'version' => '4.1',
 				'file' => '410.php',
 				'class' => 'Red_Database_410',
+			],
+			[
+				'version' => '4.2',
+				'file' => '420.php',
+				'class' => 'Red_Database_420',
 			],
 		];
 	}

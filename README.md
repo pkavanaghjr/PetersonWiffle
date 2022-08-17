@@ -1,3 +1,2 @@
-# Annual Peterson Wiffle Tournanment
+# Tournaments
 
-Overall stats and scores
