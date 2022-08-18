@@ -48,7 +48,7 @@ switch(SERVER_NAME):
 		define( 'WP_HOME', 'http://localhost:8888/wiffle.pkjr.com/PetersonWiffle/' );
 
 		/** The name of the database for WordPress */
-		define( 'DB_NAME', 'pkj_tourney' );
+		define( 'DB_NAME', 'pkj_tourney2' );
 
 		/** MySQL database username */
 		define( 'DB_USER', 'root' );
