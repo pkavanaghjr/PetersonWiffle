@@ -1,0 +1,56 @@
+<?php
+/**
+ * The template for displaying all pages.
+ *
+ * This is the template that displays all pages by default.
+ * Please note that this is the WordPress construct of pages
+ * and that other 'pages' on your WordPress site will use a
+ * different template.
+ *
+ * @package Rookie
+ */
+
+get_header(); ?>
+
+	<div id="primary" class="content-area content-area-<?php echo rookie_get_sidebar_setting(); ?>-sidebar">
+		<main id="main" class="site-main" role="main">
+
+			<?php while ( have_posts() ) : the_post(); ?>
+
+				<?php get_template_part( 'content', 'page' ); ?>
+
+				<?php
+					// If comments are open or we have at least one comment, load up the comment template
+					if ( comments_open() || get_comments_number() ) :
+						comments_template();
+					endif;
+				?>
+
+			<?php endwhile; // end of the loop. ?>
+
+
+
+			<?php // ================ CUSTOM BLOCKS ================ ?>
+			<?php
+			if( have_rows('flexible_content') ):
+				echo '<div class="flexibleContent">';
+				$blocks_url = './blocks/';
+			    while ( have_rows('flexible_content') ) : the_row();
+			        
+			        if( get_row_layout() == 'featured_winners' ):
+						include('blocks/winners/block-winners.php');
+					endif;
+
+			    endwhile;
+			    echo '</div>';
+			else :
+			    // Do something...
+
+			endif;
+			?>
+
+		</main><!-- #main -->
+	</div><!-- #primary -->
+
+<?php get_sidebar(); ?>
+<?php get_footer(); ?>
