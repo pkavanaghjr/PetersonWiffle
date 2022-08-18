@@ -18,15 +18,15 @@
             "layouts": {
                 "layout_62fdba70d7f88": {
                     "key": "layout_62fdba70d7f88",
-                    "name": "featured_winners",
-                    "label": "Featured Winners",
+                    "name": "tournament_winners",
+                    "label": "Tournament Winners",
                     "display": "block",
                     "sub_fields": [
                         {
                             "key": "field_62fdba9270af6",
-                            "label": "Winners Title",
-                            "name": "winners_title",
-                            "type": "text",
+                            "label": "Tourney Winners Msg",
+                            "name": "",
+                            "type": "message",
                             "instructions": "",
                             "required": 0,
                             "conditional_logic": 0,
@@ -35,11 +35,36 @@
                                 "class": "",
                                 "id": ""
                             },
-                            "default_value": "",
-                            "placeholder": "",
-                            "prepend": "",
-                            "append": "",
-                            "maxlength": ""
+                            "message": "This block displays all Touney Winners!",
+                            "new_lines": "wpautop",
+                            "esc_html": 0
+                        }
+                    ],
+                    "min": "",
+                    "max": ""
+                },
+                "layout_62fdc848e8028": {
+                    "key": "layout_62fdc848e8028",
+                    "name": "captains_featured",
+                    "label": "Captains - Featured",
+                    "display": "block",
+                    "sub_fields": [
+                        {
+                            "key": "field_62fdc848e8029",
+                            "label": "Featured Captains Msg",
+                            "name": "",
+                            "type": "message",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "message": "This block displays all Team Captains!",
+                            "new_lines": "wpautop",
+                            "esc_html": 0
                         }
                     ],
                     "min": "",
@@ -69,5 +94,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1660795573
+    "modified": 1660799095
 }

@@ -37,8 +37,8 @@ get_header(); ?>
 				$blocks_url = './blocks/';
 			    while ( have_rows('flexible_content') ) : the_row();
 			        
-			        if( get_row_layout() == 'featured_winners' ):
-						include('blocks/winners/block-winners.php');
+			        if( get_row_layout() == 'tournament_winners' ):
+						include('blocks/tournament_winners/block--tournament_winners.php');
 					endif;
 
 			    endwhile;
