@@ -30,12 +30,20 @@ and Blueprint http://www.blueprintcss.org/
 .btn{
 	
 }
+body #primary{
+    box-shadow: none;
+}
 
 .no-bracket .entry-content .sp-template-tournament-bracket,
 .no-bracket .entry-content .sp-table-caption{
 	display:none !important;
 }
 
+.section.block + .section.block{
+    padding-top: 50px;
+    border-top: solid 5px darkgray;
+    margin-top: 50px;
+}
 
 
 

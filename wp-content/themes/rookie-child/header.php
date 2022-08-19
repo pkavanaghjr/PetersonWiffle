@@ -15,6 +15,10 @@
 <link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
 <?php wp_head(); ?>
 
+
+  <link href="<?php echo get_stylesheet_directory_uri() . '/assets/fontawesome/css/all.css' ?>" rel="stylesheet">
+
+
 <!-- START: Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-71874838-5"></script>
 <script>

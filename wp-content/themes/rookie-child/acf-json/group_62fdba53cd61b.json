@@ -18,13 +18,13 @@
             "layouts": {
                 "layout_62fdba70d7f88": {
                     "key": "layout_62fdba70d7f88",
-                    "name": "tournament_winners",
-                    "label": "Tournament Winners",
+                    "name": "the_rafters",
+                    "label": "The Rafters",
                     "display": "block",
                     "sub_fields": [
                         {
                             "key": "field_62fdba9270af6",
-                            "label": "Tourney Winners Msg",
+                            "label": "The Rafters Msg",
                             "name": "",
                             "type": "message",
                             "instructions": "",
@@ -35,9 +35,55 @@
                                 "class": "",
                                 "id": ""
                             },
-                            "message": "This block displays all Touney Winners!",
+                            "message": "This block displays all the Tourney banners hanging up in the rafters!",
                             "new_lines": "wpautop",
                             "esc_html": 0
+                        }
+                    ],
+                    "min": "",
+                    "max": ""
+                },
+                "layout_62fdcd9870b8f": {
+                    "key": "layout_62fdcd9870b8f",
+                    "name": "winners_players",
+                    "label": "Winners - Players",
+                    "display": "block",
+                    "sub_fields": [
+                        {
+                            "key": "field_62fdcd9870b90",
+                            "label": "Player Winners Msg",
+                            "name": "",
+                            "type": "message",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "message": "This block displays all Players who have won",
+                            "new_lines": "wpautop",
+                            "esc_html": 0
+                        },
+                        {
+                            "key": "field_62fdcdecb171c",
+                            "label": "Section Title",
+                            "name": "section_title",
+                            "type": "text",
+                            "instructions": "",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "default_value": "Player Titles",
+                            "placeholder": "",
+                            "prepend": "",
+                            "append": "",
+                            "maxlength": ""
                         }
                     ],
                     "min": "",
@@ -94,5 +140,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1660799095
+    "modified": 1660886027
 }

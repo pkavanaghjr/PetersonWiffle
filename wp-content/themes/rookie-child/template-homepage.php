@@ -17,6 +17,14 @@ get_header(); ?>
 				<?php get_template_part( 'content', 'homepage' ); ?>
 
 			<?php endwhile; // end of the loop. ?>
+			
+
+			<?php 
+				/**
+				 * FLEXIBLE CONTENT
+				 */
+				include('blocks/index--flexibleContent.php'); 
+			?>
 
 		</main><!-- #main -->
 	</div><!-- #primary -->

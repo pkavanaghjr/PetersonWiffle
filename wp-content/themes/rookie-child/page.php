@@ -27,26 +27,13 @@ get_header(); ?>
 				?>
 
 			<?php endwhile; // end of the loop. ?>
+			
 
-
-
-			<?php // ================ CUSTOM BLOCKS ================ ?>
-			<?php
-			if( have_rows('flexible_content') ):
-				echo '<div class="flexibleContent">';
-				$blocks_url = './blocks/';
-			    while ( have_rows('flexible_content') ) : the_row();
-			        
-			        if( get_row_layout() == 'tournament_winners' ):
-						include('blocks/tournament_winners/block--tournament_winners.php');
-					endif;
-
-			    endwhile;
-			    echo '</div>';
-			else :
-			    // Do something...
-
-			endif;
+			<?php 
+				/**
+				 * FLEXIBLE CONTENT
+				 */
+				include('blocks/index--flexibleContent.php'); 
 			?>
 
 		</main><!-- #main -->

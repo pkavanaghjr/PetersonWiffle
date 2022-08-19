@@ -32,6 +32,14 @@ endforeach;
 
 			<?php endwhile; // end of the loop. ?>
 
+
+			<?php 
+				/**
+				 * FLEXIBLE CONTENT
+				 */
+				include('blocks/index--flexibleContent.php'); 
+			?>
+
 		</main><!-- #main -->
 	</div><!-- #primary -->
 
