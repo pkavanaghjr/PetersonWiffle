@@ -153,6 +153,7 @@ $block__winners['query'] = new WP_Query($args);
         border-bottom-color: transparent;*/
         /*z-index: -1;*/
     }
+    /* RIBBON: OVERLAP */
     .block--winners .winner:before{
         content: '';
         pointer-events: none;
@@ -224,7 +225,7 @@ $block__winners['query'] = new WP_Query($args);
     RESPONSIVE RIBBON
 =======================*/
     @media (max-width: 1024px){  
-        .block--winners .winner:before{ bottom: -70%;}
+        .block--winners .winner:before{ bottom: -75%;}
     }
     @media (max-width: 768px){  
         .block--winners .winner:before{ bottom: -95%;}
@@ -240,11 +241,14 @@ $block__winners['query'] = new WP_Query($args);
     }
     @media (max-width: 450px){  
         .block--winners .winner{ margin: 0 0 600px; }
-        .block--winners .winner:before{ bottom: -120%; }
+        .block--winners .winner:before{ bottom: -115%; }
     }
-    @media (max-width: 350px){  .block--winners .winner:before{
-        bottom: -80%;
-    }}
+    @media (max-width: 400px){  
+        .block--winners .winner:before{ bottom: -95%;}
+    }
+    @media (max-width: 350px){  
+        .block--winners .winner:before{ bottom: -80%;}
+    }
 
 
 /*==================
