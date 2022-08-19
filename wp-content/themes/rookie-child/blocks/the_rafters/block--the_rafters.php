@@ -206,13 +206,13 @@ $block__winners['query'] = new WP_Query($args);
     }
     .block--winners .winner__tourney:after{
         content: '';
-        width: 70%;
+        width: 40%;
         height: 1px;
         background-color: #ccc;
         position: absolute;
         bottom: -7px;
-        left: 15%;
-        right: 15%;
+        left: 30%;
+        right: 30%;
         transition: all 0.5s;
     }
     /*.block--winners .winner__team:hover,
